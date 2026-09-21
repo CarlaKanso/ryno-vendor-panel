@@ -2,12 +2,10 @@
 
 import { MessageSquarePlus, MessageSquareText } from "lucide-react";
 import Link from "next/link";
-import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { deleteReviewReply, replyToReview } from "@/actions/reviews";
-import { rowVariants } from "@/components/motion/variants";
 import { Avatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -133,13 +131,10 @@ export function ReviewsTable({
             </tr>
           </thead>
 
-          <tbody>
+          <tbody className="stagger">
             {reviews.map((review, index) => (
-              <motion.tr
+              <tr
                 key={review.id}
-                variants={rowVariants(index)}
-                initial="hidden"
-                animate="show"
                 className="border-b border-ink-100 align-top transition-colors last:border-0 hover:bg-ryno-50/40"
               >
                 <td className="px-5 py-3 text-ink-400 tabular">{startIndex + index}</td>
@@ -183,36 +178,22 @@ export function ReviewsTable({
                 </td>
 
                 <td className="max-w-[260px] px-3 py-3">
-                  <AnimatePresence mode="wait" initial={false}>
-                    {review.vendor_reply ? (
-                      <motion.div
-                        key="reply"
-                        initial={{ opacity: 0, y: -4 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ duration: 0.18 }}
-                      >
-                        <p className="line-clamp-3 rounded-lg bg-ryno-50 px-2.5 py-2 text-ryno-900">
-                          {review.vendor_reply}
+                  {review.vendor_reply ? (
+                    // Re-keyed on the reply text so a fresh reply fades in
+                    // rather than appearing mid-row without explanation.
+                    <div key={review.vendor_reply} className="rise-in">
+                      <p className="line-clamp-3 rounded-lg bg-ryno-50 px-2.5 py-2 text-ryno-900">
+                        {review.vendor_reply}
+                      </p>
+                      {review.replied_at ? (
+                        <p className="mt-1 text-xs text-ink-400">
+                          {formatDateTime(review.replied_at)}
                         </p>
-                        {review.replied_at ? (
-                          <p className="mt-1 text-xs text-ink-400">
-                            {formatDateTime(review.replied_at)}
-                          </p>
-                        ) : null}
-                      </motion.div>
-                    ) : (
-                      <motion.span
-                        key="no-reply"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        className="italic text-ink-400"
-                      >
-                        Not replied yet
-                      </motion.span>
-                    )}
-                  </AnimatePresence>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <span className="italic text-ink-400">Not replied yet</span>
+                  )}
                 </td>
 
                 <td className="whitespace-nowrap px-3 py-3 text-ink-500">
@@ -235,7 +216,7 @@ export function ReviewsTable({
                     {review.vendor_reply ? "Edit" : "Reply"}
                   </Button>
                 </td>
-              </motion.tr>
+              </tr>
             ))}
           </tbody>
         </table>

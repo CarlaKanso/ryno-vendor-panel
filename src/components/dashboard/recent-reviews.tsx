@@ -2,12 +2,10 @@
 
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { motion } from "motion/react";
 
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Stars } from "@/components/ui/stars";
-import { riseIn, staggerContainer } from "@/components/motion/variants";
 import type { Review } from "@/lib/api/types";
 import { formatDateTime } from "@/lib/dates";
 
@@ -34,14 +32,9 @@ export function RecentReviews({ reviews }: { reviews: Review[] }) {
           description="Customer ratings for this period will show up here."
         />
       ) : (
-        <motion.ul
-          variants={staggerContainer}
-          initial="hidden"
-          animate="show"
-          className="divide-y divide-ink-100"
-        >
+        <ul className="stagger stagger-cards divide-y divide-ink-100">
           {reviews.map((review) => (
-            <motion.li key={review.id} variants={riseIn} className="flex gap-3 px-5 py-4">
+            <li key={review.id} className="flex gap-3 px-5 py-4">
               <Avatar
                 name={review.customer.full_name}
                 src={review.customer.avatar_url}
@@ -74,9 +67,9 @@ export function RecentReviews({ reviews }: { reviews: Review[] }) {
                   {formatDateTime(review.created_at)}
                 </p>
               </div>
-            </motion.li>
+            </li>
           ))}
-        </motion.ul>
+        </ul>
       )}
     </div>
   );

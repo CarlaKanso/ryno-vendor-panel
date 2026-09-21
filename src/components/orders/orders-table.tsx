@@ -3,12 +3,10 @@
 import { Eye, Undo2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
 
 import { restoreOrder } from "@/actions/orders";
-import { rowVariants } from "@/components/motion/variants";
 import { StatusBadge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -93,13 +91,10 @@ export function OrdersTable({
           </tr>
         </thead>
 
-        <tbody>
+        <tbody className="stagger">
           {orders.map((order, index) => (
-            <motion.tr
+            <tr
               key={order.id}
-              variants={rowVariants(index)}
-              initial="hidden"
-              animate="show"
               className="border-b border-ink-100 transition-colors last:border-0 hover:bg-ryno-50/40"
             >
               <td className="px-5 py-3 text-ink-400 tabular">{startIndex + index}</td>
@@ -157,7 +152,7 @@ export function OrdersTable({
                   </Link>
                 </div>
               </td>
-            </motion.tr>
+            </tr>
           ))}
         </tbody>
       </table>

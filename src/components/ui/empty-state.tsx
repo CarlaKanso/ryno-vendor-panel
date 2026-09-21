@@ -1,7 +1,4 @@
-"use client";
-
 import Image from "next/image";
-import { motion } from "motion/react";
 import type { ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
@@ -33,16 +30,10 @@ export function EmptyState({
         className,
       )}
     >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.9 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ type: "spring", stiffness: 260, damping: 22 }}
-        className="relative"
-      >
-        <motion.div
-          animate={{ y: [0, -6, 0] }}
-          transition={{ duration: 3.6, repeat: Infinity, ease: "easeInOut" }}
-        >
+      <div className="pop-in relative">
+        {/* The mascot floats slowly — enough to make a dead end feel
+            intentional, slow enough not to nag. */}
+        <div className="float-y">
           <Image
             src="/brand/ryno-mascot.png"
             alt=""
@@ -50,12 +41,12 @@ export function EmptyState({
             height={compact ? 72 : 108}
             className={cn("opacity-90", tone === "error" && "grayscale")}
           />
-        </motion.div>
+        </div>
         <div
           className="absolute -bottom-1 left-1/2 h-2 w-14 -translate-x-1/2 rounded-[50%] bg-ink-900/10 blur-[3px]"
           aria-hidden
         />
-      </motion.div>
+      </div>
 
       <p className="mt-4 text-sm font-semibold text-ink-800">{title}</p>
       {description ? (

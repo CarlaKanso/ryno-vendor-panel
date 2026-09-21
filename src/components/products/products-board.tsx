@@ -7,7 +7,6 @@ import { useState } from "react";
 import { toast } from "sonner";
 
 import { createItem, deleteItem, updateItem } from "@/actions/products";
-import { rowVariants } from "@/components/motion/variants";
 import { Tag } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
@@ -177,15 +176,13 @@ export function ProductsBoard({
                   </th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="stagger">
                 <AnimatePresence initial={false}>
-                  {visible.map((item, index) => (
+                  {visible.map((item) => (
                     <motion.tr
                       key={item.id}
-                      layout
-                      variants={rowVariants(index)}
-                      initial="hidden"
-                      animate="show"
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.2 }}
                       className="border-b border-ink-100 transition-colors last:border-0 hover:bg-ryno-50/40"
                     >
                       <td className="px-5 py-3">

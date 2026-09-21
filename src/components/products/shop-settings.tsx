@@ -1,12 +1,10 @@
 "use client";
 
 import { Check, MapPin, Phone, Store } from "lucide-react";
-import { motion } from "motion/react";
 import { useState } from "react";
 import { toast } from "sonner";
 
 import { updateShop } from "@/actions/products";
-import { riseIn, staggerContainer } from "@/components/motion/variants";
 import { Tag } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -23,18 +21,13 @@ import { formatDate } from "@/lib/dates";
  */
 export function ShopSettings({ shops }: { shops: Shop[] }) {
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="show"
-      className="grid gap-4 xl:grid-cols-2"
-    >
+    <div className="stagger stagger-cards grid gap-4 xl:grid-cols-2">
       {shops.map((shop) => (
-        <motion.div key={shop.id} variants={riseIn}>
+        <div key={shop.id}>
           <ShopCard shop={shop} />
-        </motion.div>
+        </div>
       ))}
-    </motion.div>
+    </div>
   );
 }
 

@@ -1,7 +1,4 @@
-"use client";
-
 import { Check, X } from "lucide-react";
-import { motion } from "motion/react";
 
 import { cn } from "@/lib/cn";
 import type { OrderDetail } from "@/lib/api/types";
@@ -64,22 +61,24 @@ export function OrderTimeline({ order }: { order: OrderDetail }) {
             className="absolute bottom-2 left-[15px] top-2 w-0.5 rounded bg-ink-200 sm:hidden"
             aria-hidden
           >
-            <motion.div
-              initial={{ height: 0 }}
-              animate={{ height: `${progress * 100}%` }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className={cn("w-full rounded bg-ryno-600", terminated && "bg-red-500")}
+            <div
+              className={cn(
+                "grow-y w-full rounded bg-ryno-600",
+                terminated && "bg-red-500",
+              )}
+              style={{ height: `${progress * 100}%` }}
             />
           </div>
           <div
             className="absolute left-0 right-0 top-[15px] hidden h-0.5 rounded bg-ink-200 sm:block"
             aria-hidden
           >
-            <motion.div
-              initial={{ width: 0 }}
-              animate={{ width: `${progress * 100}%` }}
-              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className={cn("h-full rounded bg-ryno-600", terminated && "bg-red-500")}
+            <div
+              className={cn(
+                "grow-x h-full rounded bg-ryno-600",
+                terminated && "bg-red-500",
+              )}
+              style={{ width: `${progress * 100}%` }}
             />
           </div>
 
@@ -90,17 +89,10 @@ export function OrderTimeline({ order }: { order: OrderDetail }) {
                 key={step.type}
                 className="relative flex flex-1 items-start gap-3 sm:flex-col sm:items-center sm:gap-2 sm:text-center"
               >
-                <motion.span
-                  initial={{ scale: 0.6, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{
-                    delay: done ? index * 0.08 : 0.2,
-                    type: "spring",
-                    stiffness: 400,
-                    damping: 22,
-                  }}
+                <span
+                  style={{ animationDelay: `${Math.min(index, 8) * 70}ms` }}
                   className={cn(
-                    "relative z-10 grid size-8 shrink-0 place-items-center rounded-full ring-4 ring-white",
+                    "pop-in relative z-10 grid size-8 shrink-0 place-items-center rounded-full ring-4 ring-white",
                     done
                       ? "bg-ryno-600 text-white"
                       : "bg-ink-100 text-ink-400 ring-white",
@@ -111,7 +103,7 @@ export function OrderTimeline({ order }: { order: OrderDetail }) {
                   ) : (
                     <span className="size-1.5 rounded-full bg-ink-400" aria-hidden />
                   )}
-                </motion.span>
+                </span>
 
                 <div className="min-w-0 sm:px-1">
                   <p
@@ -132,14 +124,12 @@ export function OrderTimeline({ order }: { order: OrderDetail }) {
 
           {terminated ? (
             <li className="relative flex flex-1 items-start gap-3 sm:flex-col sm:items-center sm:gap-2 sm:text-center">
-              <motion.span
-                initial={{ scale: 0.6, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                transition={{ delay: 0.3, type: "spring", stiffness: 400, damping: 22 }}
-                className="relative z-10 grid size-8 shrink-0 place-items-center rounded-full bg-red-600 text-white ring-4 ring-white"
+              <span
+                style={{ animationDelay: "300ms" }}
+                className="pop-in relative z-10 grid size-8 shrink-0 place-items-center rounded-full bg-red-600 text-white ring-4 ring-white"
               >
                 <X className="size-4" aria-hidden />
-              </motion.span>
+              </span>
               <div className="min-w-0 sm:px-1">
                 <p className="text-[13px] font-medium leading-tight text-red-700">
                   {terminated === "cancelled" ? "Cancelled" : "Refunded"}

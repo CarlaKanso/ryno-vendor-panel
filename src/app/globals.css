@@ -122,6 +122,152 @@ body {
   scrollbar-color: var(--color-ink-300) transparent;
 }
 
+
+/* ---------------------------------------------------------------------------
+   Entrance animations
+
+   Deliberately CSS rather than JavaScript. A motion library applies its
+   `initial` style only after hydration, so every server-rendered list becomes
+   a hydration mismatch: the server sends visible markup, the client replaces
+   it with `opacity: 0`, and React warns that it will not patch the difference.
+   A CSS animation is in the stylesheet both sides already share, so the markup
+   is identical — and `fill-mode: both` leaves the element resting in its final
+   state, which means the content is correct even if the animation never runs.
+
+   JavaScript motion is kept for what CSS genuinely cannot do: shared-layout
+   transitions, exit animations, gestures and value tweens.
+
+   `prefers-reduced-motion` collapses all of it in the block above.
+--------------------------------------------------------------------------- */
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes rise-in-sm {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.92);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes float-y {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes grow-x {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes grow-y {
+  from {
+    transform: scaleY(0);
+  }
+  to {
+    transform: scaleY(1);
+  }
+}
+
+.rise-in {
+  animation: rise-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.pop-in {
+  animation: pop-in 0.38s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Grows a bar or rail from its start edge. The element keeps its own width or
+   height; only the scale is animated, which stays on the compositor. */
+.float-y {
+  animation: float-y 3.6s ease-in-out infinite;
+}
+
+.grow-x {
+  transform-origin: left center;
+  animation: grow-x 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.grow-y {
+  transform-origin: top center;
+  animation: grow-y 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Reveals children one after another. The delay is capped so a 100-row table
+   still finishes in a quarter of a second rather than staggering for ages. */
+.stagger > * {
+  animation: rise-in-sm 0.36s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.stagger > *:nth-child(1) {
+  animation-delay: 0ms;
+}
+.stagger > *:nth-child(2) {
+  animation-delay: 30ms;
+}
+.stagger > *:nth-child(3) {
+  animation-delay: 60ms;
+}
+.stagger > *:nth-child(4) {
+  animation-delay: 90ms;
+}
+.stagger > *:nth-child(5) {
+  animation-delay: 120ms;
+}
+.stagger > *:nth-child(6) {
+  animation-delay: 150ms;
+}
+.stagger > *:nth-child(7) {
+  animation-delay: 175ms;
+}
+.stagger > *:nth-child(8) {
+  animation-delay: 200ms;
+}
+.stagger > *:nth-child(9) {
+  animation-delay: 220ms;
+}
+.stagger > *:nth-child(n + 10) {
+  animation-delay: 240ms;
+}
+
+/* The same rhythm, a touch slower, for cards rather than rows. */
+.stagger-cards > * {
+  animation-name: rise-in;
+  animation-duration: 0.44s;
+}
+
 /* ---------------------------------------------------------------------------
    Print — used by the invoice route
 --------------------------------------------------------------------------- */

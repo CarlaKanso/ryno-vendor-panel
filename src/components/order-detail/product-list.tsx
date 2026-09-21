@@ -105,7 +105,10 @@ export function ProductList({
             </tr>
           </thead>
 
-          <tbody>
+          {/* Entrance comes from the CSS stagger on the body; Motion is here
+              only for the exit, so a removed substitute collapses out of the
+              table instead of vanishing. */}
+          <tbody className="stagger">
             <AnimatePresence initial={false}>
               {order.items.map((item, index) => {
                 const unavailable = item.status === "not_available";
@@ -114,11 +117,8 @@ export function ProductList({
                 return (
                   <motion.tr
                     key={item.id}
-                    layout
-                    initial={{ opacity: 0, y: 6 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, height: 0 }}
-                    transition={{ duration: 0.22 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
                     className={cn(
                       "border-b border-ink-100 last:border-0",
                       unavailable && "bg-red-50/40",

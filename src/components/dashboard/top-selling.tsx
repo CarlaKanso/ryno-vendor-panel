@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { AnimatePresence, motion } from "motion/react";
+import { motion } from "motion/react";
 import { useState } from "react";
 
 import { EmptyState } from "@/components/ui/empty-state";
@@ -67,15 +67,10 @@ export function TopSelling({
       </div>
 
       <div className="flex-1 px-5 py-4">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.ul
-            key={tab}
-            initial={{ opacity: 0, y: 6 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.18 }}
-            className="space-y-3"
-          >
+        {/* Re-keying on the tab remounts the list, which replays the CSS
+            rise. The sliding underline above still needs JS — a shared layout
+            transition is the one thing CSS cannot express. */}
+        <ul key={tab} className="rise-in space-y-3">
             {tab === "shops" ? (
               shops.length === 0 ? (
                 <EmptyState compact title="No shop data yet" />
@@ -140,8 +135,7 @@ export function TopSelling({
                 </li>
               ))
             )}
-          </motion.ul>
-        </AnimatePresence>
+        </ul>
       </div>
     </div>
   );
@@ -151,11 +145,12 @@ export function TopSelling({
 function Meter({ value, delay }: { value: number; delay: number }) {
   return (
     <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-ink-100">
-      <motion.div
-        initial={{ width: 0 }}
-        animate={{ width: `${Math.max(value, 0.02) * 100}%` }}
-        transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
-        className="h-full rounded-full bg-gradient-to-r from-ryno-500 to-gold-400"
+      <div
+        className="grow-x h-full rounded-full bg-gradient-to-r from-ryno-500 to-gold-400"
+        style={{
+          width: `${Math.max(value, 0.02) * 100}%`,
+          animationDelay: `${delay}s`,
+        }}
       />
     </div>
   );

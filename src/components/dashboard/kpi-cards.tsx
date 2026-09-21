@@ -8,10 +8,8 @@ import {
   XCircle,
   type LucideIcon,
 } from "lucide-react";
-import { motion } from "motion/react";
 
 import { AnimatedNumber } from "@/components/motion/animated-number";
-import { riseIn, staggerContainer } from "@/components/motion/variants";
 import { cn } from "@/lib/cn";
 import { formatAmount, formatCount } from "@/lib/money";
 import type { Kpis } from "@/lib/analytics";
@@ -70,57 +68,51 @@ const CARDS: CardSpec[] = [
 
 export function KpiCards({ kpis, currency = "GHS" }: { kpis: Kpis; currency?: string }) {
   return (
-    <motion.div
-      variants={staggerContainer}
-      initial="hidden"
-      animate="show"
-      className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5"
-    >
+    <div className="stagger stagger-cards grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
       {CARDS.map((card) => {
         const Icon = card.icon;
         const value = kpis[card.key];
 
         return (
-          <motion.div
+          <div
             key={card.key}
-            variants={riseIn}
-            whileHover={{ y: -3 }}
-            transition={{ type: "spring", stiffness: 400, damping: 28 }}
-            className="rounded-card border border-ink-200/80 bg-white p-4 shadow-card transition-shadow hover:shadow-card-hover"
+            className="rounded-card border border-ink-200/80 bg-white p-4 shadow-card transition-[box-shadow,transform] duration-200 hover:-translate-y-0.5 hover:shadow-card-hover"
           >
-            <div className="flex items-start justify-between gap-3">
+            <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
+                {/* The currency sits on the label line rather than in front of
+                    the number: 18 months of sales is "838,014.52", and a
+                    "GHS " prefix pushed that out of a five-across card. */}
                 <p className="text-xs font-medium uppercase tracking-wide text-ink-500">
                   {card.label}
-                </p>
-                <p className="mt-2 text-2xl font-bold tracking-tight text-ink-900 tabular">
                   {card.money ? (
-                    <>
-                      <span className="mr-1 text-sm font-semibold text-ink-400">
-                        {currency}
-                      </span>
-                      <AnimatedNumber value={value} format={formatAmount} />
-                    </>
-                  ) : (
-                    <AnimatedNumber value={value} format={formatWholeCount} />
-                  )}
+                    <span className="ml-1 text-ink-400 normal-case">({currency})</span>
+                  ) : null}
                 </p>
+
+                <p className="mt-2 text-2xl font-bold leading-tight tracking-tight text-ink-900 tabular">
+                  <AnimatedNumber
+                    value={value}
+                    format={card.money ? formatAmount : formatWholeCount}
+                  />
+                </p>
+
                 <p className="mt-1 text-xs text-ink-400">{card.hint}</p>
               </div>
 
               <span
                 className={cn(
-                  "grid size-10 shrink-0 place-items-center rounded-xl",
+                  "grid size-9 shrink-0 place-items-center rounded-xl",
                   card.tone,
                 )}
                 aria-hidden
               >
-                <Icon className="size-5" />
+                <Icon className="size-4.5" />
               </span>
             </div>
-          </motion.div>
+          </div>
         );
       })}
-    </motion.div>
+    </div>
   );
 }

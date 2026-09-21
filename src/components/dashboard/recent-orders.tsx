@@ -3,12 +3,10 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { motion } from "motion/react";
 
 import { StatusBadge } from "@/components/ui/badge";
 import { Avatar } from "@/components/ui/avatar";
 import { EmptyState } from "@/components/ui/empty-state";
-import { rowVariants } from "@/components/motion/variants";
 import type { Order } from "@/lib/api/types";
 import { formatDateTime } from "@/lib/dates";
 import { formatMoney } from "@/lib/money";
@@ -65,13 +63,10 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
                 </th>
               </tr>
             </thead>
-            <tbody>
-              {orders.map((order, index) => (
-                <motion.tr
+            <tbody className="stagger">
+              {orders.map((order) => (
+                <tr
                   key={order.id}
-                  variants={rowVariants(index)}
-                  initial="hidden"
-                  animate="show"
                   onClick={() => router.push(`/orders/${order.order_no}`)}
                   className="cursor-pointer border-b border-ink-100 last:border-0 transition-colors hover:bg-ryno-50/50"
                 >
@@ -113,7 +108,7 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
                   <td className="whitespace-nowrap px-5 py-3 text-ink-500">
                     {formatDateTime(order.created_at)}
                   </td>
-                </motion.tr>
+                </tr>
               ))}
             </tbody>
           </table>

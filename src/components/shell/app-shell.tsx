@@ -3,7 +3,6 @@
 import { Menu } from "lucide-react";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { motion } from "motion/react";
 import { useCallback, useState, type ReactNode } from "react";
 
 import type { Vendor } from "@/lib/api/types";
@@ -79,17 +78,13 @@ export function AppShell({
         </header>
 
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">
-          {/* Re-keying on the pathname replays a short rise on each
-              navigation. No exit animation on purpose: holding the old page
-              back would delay the new one for the sake of a flourish. */}
-          <motion.div
-            key={pathname}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.22, ease: [0.22, 1, 0.36, 1] }}
-          >
+          {/* Re-keying on the pathname remounts this node, which replays the
+              CSS rise on each navigation. No exit animation on purpose:
+              holding the old page back would delay the new one for the sake
+              of a flourish. */}
+          <div key={pathname} className="rise-in">
             {children}
-          </motion.div>
+          </div>
         </main>
       </div>
     </div>

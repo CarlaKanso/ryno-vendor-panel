@@ -1,26 +1,143 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+/* ---------------------------------------------------------------------------
+   RYNO brand tokens
+   Palette and typography come straight from the RYNO brand kit:
+   #395f2d (green), #f9cb15 (yellow), #acafc0 / #9093a0 (greys),
+   Figtree for headings and body, Bebas Neue for display sub-headings.
+--------------------------------------------------------------------------- */
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@theme {
+  /* Brand green */
+  --color-ryno-50: #f2f6f0;
+  --color-ryno-100: #e0eadd;
+  --color-ryno-200: #c2d6bc;
+  --color-ryno-300: #9bbb92;
+  --color-ryno-400: #6f9a63;
+  --color-ryno-500: #4d7b41;
+  --color-ryno-600: #395f2d;
+  --color-ryno-700: #2e4d25;
+  --color-ryno-800: #253d1f;
+  --color-ryno-900: #1d301a;
+  --color-ryno-950: #0f1a0d;
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  /* Brand yellow */
+  --color-gold-50: #fffbeb;
+  --color-gold-100: #fef4c7;
+  --color-gold-200: #fde88a;
+  --color-gold-300: #fcd94d;
+  --color-gold-400: #f9cb15;
+  --color-gold-500: #e3b30a;
+  --color-gold-600: #bb8c06;
+  --color-gold-700: #956608;
+  --color-gold-800: #7b510f;
+  --color-gold-900: #684312;
+
+  /* Brand greys */
+  --color-slate-brand: #9093a0;
+  --color-slate-brand-light: #acafc0;
+
+  /* Neutrals tuned to sit next to the brand green */
+  --color-ink-50: #f7f8f7;
+  --color-ink-100: #eef0ef;
+  --color-ink-200: #dfe2e1;
+  --color-ink-300: #c6cbc9;
+  --color-ink-400: #9aa09e;
+  --color-ink-500: #737a78;
+  --color-ink-600: #5a615f;
+  --color-ink-700: #474d4c;
+  --color-ink-800: #313635;
+  --color-ink-900: #1c201f;
+
+  --color-canvas: #f6f7f4;
+
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", sans-serif;
+  --font-display: var(--font-bebas), var(--font-figtree), ui-sans-serif,
+    system-ui, sans-serif;
+
+  --radius-card: 0.875rem;
+
+  --shadow-card: 0 1px 2px rgb(28 32 31 / 0.04), 0 1px 3px rgb(28 32 31 / 0.06);
+  --shadow-card-hover: 0 6px 16px rgb(28 32 31 / 0.08),
+    0 2px 4px rgb(28 32 31 / 0.04);
+  --shadow-pop: 0 20px 50px -12px rgb(28 32 31 / 0.25);
+
+  --animate-shimmer: shimmer 1.6s ease-in-out infinite;
+
+  @keyframes shimmer {
+    0%,
+    100% {
+      opacity: 0.55;
+    }
+    50% {
+      opacity: 1;
+    }
   }
 }
 
+/* ---------------------------------------------------------------------------
+   Base
+--------------------------------------------------------------------------- */
+
+html {
+  color-scheme: light;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--color-canvas);
+  color: var(--color-ink-900);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Visible, on-brand focus ring everywhere. */
+:where(a, button, input, select, textarea, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-ryno-600);
+  outline-offset: 2px;
+  border-radius: 0.375rem;
+}
+
+/* The tabular figures make money columns line up in tables. */
+.tabular {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Respect the user's motion preference: kill transforms and transitions,
+   including the ones Motion drives. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Thin scrollbars inside scrollable panels. */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-ink-300) transparent;
+}
+
+/* ---------------------------------------------------------------------------
+   Print — used by the invoice route
+--------------------------------------------------------------------------- */
+
+@media print {
+  @page {
+    size: A4;
+    margin: 14mm;
+  }
+
+  html,
+  body {
+    background: #fff !important;
+  }
+
+  .print\:hidden {
+    display: none !important;
+  }
 }

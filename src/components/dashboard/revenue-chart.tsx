@@ -41,8 +41,14 @@ export function RevenueChart({
   const [pending, startTransition] = useTransition();
 
   const setGranularity = (next: Granularity) => {
+    // `scroll: false` — you are looking at the chart when you press this, so
+    // the default jump back to the top of the page throws away your place.
+    // It is barely noticeable on a desktop where the chart is already in
+    // view, and very noticeable on a phone where it is not.
     startTransition(() =>
-      router.push(`${pathname}${buildQuery(searchParams, { granularity: next })}`),
+      router.push(`${pathname}${buildQuery(searchParams, { granularity: next })}`, {
+        scroll: false,
+      }),
     );
   };
 

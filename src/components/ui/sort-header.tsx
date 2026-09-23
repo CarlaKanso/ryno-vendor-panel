@@ -47,6 +47,9 @@ export function SortHeader({
     >
       <Link
         href={`${pathname}${buildQuery(searchParams, { sort: nextSort })}`}
+        // Keep the reader where they are: they are looking at the column they
+        // just clicked, and a re-sort should not also move the page.
+        scroll={false}
         className={cn(
           "inline-flex items-center gap-1 rounded transition-colors hover:text-ink-900",
           isActive && "text-ryno-700",

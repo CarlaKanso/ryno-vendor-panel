@@ -64,15 +64,21 @@ export function Pagination({
   const router = useRouter();
   const searchParams = useSearchParams();
 
+  // With no results the empty state already explains the situation; a pager
+  // reading "Showing 0 to 0 of 0" with every control dead is just noise.
+  const isEmpty = total === 0;
+
   const href = (updates: Record<string, string | number | null>) =>
     `${pathname}${buildQuery(searchParams, updates, { resetPage: false })}`;
 
-  const firstRow = total === 0 ? 0 : (page - 1) * perPage + 1;
+  const firstRow = (page - 1) * perPage + 1;
   const lastRow = Math.min(page * perPage, total);
 
   const navButton =
     "inline-flex size-8 items-center justify-center rounded-md border border-ink-300 bg-white text-ink-600 transition-colors hover:bg-ink-50 hover:text-ink-900";
   const navDisabled = "pointer-events-none opacity-40";
+
+  if (isEmpty) return null;
 
   return (
     <div className="flex flex-col gap-3 border-t border-ink-200 px-5 py-3.5 sm:flex-row sm:items-center sm:justify-between">

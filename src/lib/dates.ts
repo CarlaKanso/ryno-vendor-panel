@@ -157,30 +157,3 @@ export function formatBucketLabel(key: string, granularity: Granularity): string
   const label = `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
   return granularity === "weekly" ? `w/c ${label}` : label;
 }
-
-/** "2 hours ago" style, for review and order lists. */
-export function formatRelative(iso: string | null | undefined, now: Date): string {
-  if (!iso) return "—";
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-
-  const seconds = Math.round((now.getTime() - date.getTime()) / 1000);
-
-  const units: Array<[Intl.RelativeTimeFormatUnit, number]> = [
-    ["second", 60],
-    ["minute", 60],
-    ["hour", 24],
-    ["day", 7],
-    ["week", 4.35],
-    ["month", 12],
-    ["year", Number.POSITIVE_INFINITY],
-  ];
-
-  const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
-  let value = seconds;
-  for (const [unit, size] of units) {
-    if (Math.abs(value) < size) return formatter.format(-Math.round(value), unit);
-    value /= size;
-  }
-  return formatter.format(-Math.round(value), "year");
-}

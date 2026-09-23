@@ -55,7 +55,6 @@ type RequestOptions = {
   method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   body?: unknown;
   query?: Record<string, QueryValue>;
-  signal?: AbortSignal;
 };
 
 function requireConfig(): { baseUrl: string; apiKey: string } {
@@ -74,7 +73,7 @@ export async function apiFetch<T>(
   options: RequestOptions = {},
 ): Promise<T> {
   const { baseUrl, apiKey } = requireConfig();
-  const { method = "GET", body, query, signal } = options;
+  const { method = "GET", body, query } = options;
 
   const url = `${baseUrl}${path}${toQueryString(query ?? {})}`;
 
@@ -87,7 +86,6 @@ export async function apiFetch<T>(
         ...(body === undefined ? {} : { "Content-Type": "application/json" }),
       },
       body: body === undefined ? undefined : JSON.stringify(body),
-      signal,
       cache: "no-store",
     });
   } catch {

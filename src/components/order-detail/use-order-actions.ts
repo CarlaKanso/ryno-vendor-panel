@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { toast } from "sonner";
 
 import { refetchOrder, type ActionResult } from "@/actions/orders";
@@ -31,6 +31,13 @@ export function useOrderActions(initial: OrderDetail) {
   const [order, setOrder] = useState(initial);
   const [pendingAction, setPendingAction] = useState<string | null>(null);
 
+  // The guard is a ref, not the state above. `pendingAction` is only correct
+  // once React has re-rendered, so a handler still holding the previous `run`
+  // would read `null` and let a second write through. A ref is written
+  // synchronously, so the very next call sees it — and keeping it out of the
+  // dependency list means `run` has a stable identity.
+  const inFlight = useRef(false);
+
   const reload = useCallback(async () => {
     const result = await refetchOrder(order.order_no);
     if (result.ok) {
@@ -44,8 +51,9 @@ export function useOrderActions(initial: OrderDetail) {
   const run = useCallback<RunAction>(
     async (key, action, options) => {
       // A second press while something is in flight is ignored outright; the
-      // disabled state is the visible half of the same guard.
-      if (pendingAction !== null) return;
+      // disabled button is the visible half of the same guard.
+      if (inFlight.current) return;
+      inFlight.current = true;
       setPendingAction(key);
 
       try {
@@ -69,11 +77,12 @@ export function useOrderActions(initial: OrderDetail) {
 
         toast.error(result.message);
       } finally {
+        inFlight.current = false;
         setPendingAction(null);
       }
     },
-    [pendingAction, reload],
+    [reload],
   );
 
-  return { order, setOrder, run, pendingAction, reload };
+  return { order, run, pendingAction };
 }

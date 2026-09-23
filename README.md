@@ -15,11 +15,19 @@ plus the two bonus surfaces (Products, Shops).
 
 ## Running it locally
 
+**Requires Node 22.12 or newer** (`.nvmrc` pins 24). Next.js 16 needs 20.9+,
+and Vitest needs 22.12+, so 22.12 is the real floor. `nvm use` picks it up.
+
 ```bash
+git clone https://github.com/CarlaKanso/ryno-vendor-panel.git
+cd ryno-vendor-panel
+nvm use                      # optional, if you use nvm
 npm install
-cp .env.example .env.local   # then paste your API key into .env.local
+cp .env.example .env.local   # then paste the API key into .env.local
 npm run dev
 ```
+
+Then open http://localhost:3000.
 
 `.env.local` needs two values, both server-side only:
 

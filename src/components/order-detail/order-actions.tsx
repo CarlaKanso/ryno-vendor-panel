@@ -15,8 +15,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
-import { Modal } from "@/components/ui/modal";
-import { Select } from "@/components/ui/field";
 import type { OrderDetail, OrderStatus, Person } from "@/lib/api/types";
 import {
   CANCEL_REASONS,
@@ -24,6 +22,7 @@ import {
   REFUND_REASONS,
   TRANSITION_LABELS,
 } from "@/lib/status";
+import { AssignDriverDialog } from "./assign-driver-dialog";
 import { ReasonDialog } from "./reason-dialog";
 import type { RunAction } from "./use-order-actions";
 
@@ -56,7 +55,6 @@ export function OrderActions({
   const [confirmRemoveDriver, setConfirmRemoveDriver] = useState(false);
   const [confirmArchive, setConfirmArchive] = useState(false);
   const [archiving, setArchiving] = useState(false);
-  const [selectedDriver, setSelectedDriver] = useState("");
 
   const transitions = order.allowed_transitions ?? [];
   const safeTransitions = transitions.filter(
@@ -122,10 +120,7 @@ export function OrderActions({
           <Button
             variant="secondary"
             disabled={pendingAction !== null}
-            onClick={() => {
-              setSelectedDriver(order.driver?.id ?? "");
-              setDriverOpen(true);
-            }}
+            onClick={() => setDriverOpen(true)}
             icon={<Bike className="size-4 text-ryno-600" aria-hidden />}
           >
             {order.driver ? "Change driver" : "Assign driver"}
@@ -212,56 +207,19 @@ export function OrderActions({
         }}
       />
 
-      <Modal
+      <AssignDriverDialog
         open={driverOpen}
         onClose={() => setDriverOpen(false)}
-        title={order.driver ? "Change driver" : "Assign a driver"}
-        description="Only drivers who are currently active can take a job."
-        footer={
-          <>
-            <Button variant="ghost" onClick={() => setDriverOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              variant="primary"
-              disabled={!selectedDriver || selectedDriver === order.driver?.id}
-              loading={pendingAction === "driver:assign"}
-              onClick={() =>
-                void run(
-                  "driver:assign",
-                  () => assignDriver(order.order_no, selectedDriver),
-                  {
-                    success: "Driver assigned",
-                    onSuccess: () => setDriverOpen(false),
-                  },
-                )
-              }
-            >
-              Assign driver
-            </Button>
-          </>
+        drivers={activeDrivers}
+        currentDriverId={order.driver?.id ?? null}
+        loading={pendingAction === "driver:assign"}
+        onAssign={(driverId) =>
+          void run("driver:assign", () => assignDriver(order.order_no, driverId), {
+            success: "Driver assigned",
+            onSuccess: () => setDriverOpen(false),
+          })
         }
-      >
-        <label
-          htmlFor="driver-select"
-          className="mb-1.5 block text-xs font-medium text-ink-600"
-        >
-          Driver
-        </label>
-        <Select
-          id="driver-select"
-          value={selectedDriver}
-          onChange={(event) => setSelectedDriver(event.target.value)}
-        >
-          <option value="">Select a driver…</option>
-          {activeDrivers.map((driver) => (
-            <option key={driver.id} value={driver.id}>
-              {driver.full_name}
-              {driver.address ? ` — ${driver.address}` : ""}
-            </option>
-          ))}
-        </Select>
-      </Modal>
+      />
 
       <ConfirmDialog
         open={confirmRemoveDriver}

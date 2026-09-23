@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Plus, Search, Trash2 } from "lucide-react";
+import { ImageIcon, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import Image from "next/image";
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
@@ -15,6 +15,32 @@ import { Field, Select, TextInput } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
 import type { Category, Item } from "@/lib/api/types";
 import { formatMoney } from "@/lib/money";
+
+/**
+ * The values the product dialog hands back. `image` is a URL, not a file:
+ * this API stores `image_url` and has no upload endpoint, so there is nowhere
+ * to put bytes even if we collected them.
+ */
+type ProductFormValues = {
+  name: string;
+  price: number;
+  sub_category_id: string;
+  barcode: string;
+  image: string;
+  is_active: boolean;
+};
+
+/** `true` for an empty string or a well-formed http(s) URL. */
+function isUsableImageUrl(value: string): boolean {
+  const trimmed = value.trim();
+  if (!trimmed) return true;
+  try {
+    const { protocol } = new URL(trimmed);
+    return protocol === "http:" || protocol === "https:";
+  } catch {
+    return false;
+  }
+}
 
 /**
  * Products (bonus).
@@ -56,13 +82,7 @@ export function ProductsBoard({
       .some((value) => value!.toLowerCase().includes(needle));
   });
 
-  const save = async (input: {
-    name: string;
-    price: number;
-    sub_category_id: string;
-    barcode: string;
-    is_active: boolean;
-  }) => {
+  const save = async (input: ProductFormValues) => {
     if (pending) return;
     setPending(true);
 
@@ -71,6 +91,7 @@ export function ProductsBoard({
       price: input.price,
       sub_category_id: input.sub_category_id,
       barcode: input.barcode.trim() || null,
+      image_url: input.image.trim() || null,
       is_active: input.is_active,
     };
 
@@ -280,13 +301,7 @@ function ProductDialog({
   target: Item | "new" | null;
   subCategories: Category[];
   onClose: () => void;
-  onSave: (input: {
-    name: string;
-    price: number;
-    sub_category_id: string;
-    barcode: string;
-    is_active: boolean;
-  }) => void;
+  onSave: (input: ProductFormValues) => void;
   saving: boolean;
 }) {
   const isNew = target === "new";
@@ -297,8 +312,10 @@ function ProductDialog({
     price: "",
     sub_category_id: "",
     barcode: "",
+    image: "",
     is_active: true,
   });
+  const [imageBroken, setImageBroken] = useState(false);
 
   // Seed the form from whichever product is being edited, during render — the
   // dialog stays mounted between openings, so there is no remount to do it.
@@ -312,17 +329,21 @@ function ProductDialog({
         price: item ? String(item.price) : "",
         sub_category_id: item?.sub_category_id ?? subCategories[0]?.id ?? "",
         barcode: item?.barcode ?? "",
+        image: item?.image_url ?? "",
         is_active: item?.is_active ?? true,
       });
+      setImageBroken(false);
     }
   }
 
   const price = Number(form.price);
+  const imageUrlOk = isUsableImageUrl(form.image);
   const valid =
     form.name.trim().length > 0 &&
     Number.isFinite(price) &&
     price >= 0 &&
-    form.sub_category_id.length > 0;
+    form.sub_category_id.length > 0 &&
+    imageUrlOk;
 
   return (
     <Modal
@@ -345,6 +366,7 @@ function ProductDialog({
                 price,
                 sub_category_id: form.sub_category_id,
                 barcode: form.barcode,
+                image: form.image,
                 is_active: form.is_active,
               })
             }
@@ -400,6 +422,58 @@ function ProductDialog({
             ))}
           </Select>
         </Field>
+
+        {/* A link, not an upload: the API stores `image_url` and offers no
+            endpoint to put bytes anywhere. The preview is the useful half —
+            it tells you the URL resolves before you save it. */}
+        <Field
+          label="Image URL"
+          htmlFor="product-image"
+          hint={
+            imageUrlOk
+              ? "Optional. Paste a link to a product photo."
+              : "That doesn't look like a web address — it should start with http:// or https://"
+          }
+        >
+          <div className="flex items-start gap-3">
+            <span className="grid size-14 shrink-0 place-items-center overflow-hidden rounded-lg bg-ink-100 ring-1 ring-ink-200">
+              {form.image.trim() && imageUrlOk && !imageBroken ? (
+                /* The host here is whatever the vendor pasted, so `next/image`
+                   cannot be told to allow it in advance — a plain <img> is the
+                   only thing that works for an arbitrary URL. */
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={form.image.trim()}
+                  alt=""
+                  className="size-full object-cover"
+                  onError={() => setImageBroken(true)}
+                  onLoad={() => setImageBroken(false)}
+                />
+              ) : (
+                <ImageIcon className="size-5 text-ink-400" aria-hidden />
+              )}
+            </span>
+            <TextInput
+              id="product-image"
+              type="url"
+              inputMode="url"
+              placeholder="https://example.com/photo.jpg"
+              value={form.image}
+              aria-invalid={!imageUrlOk}
+              onChange={(event) => {
+                setImageBroken(false);
+                setForm({ ...form, image: event.target.value });
+              }}
+            />
+          </div>
+        </Field>
+
+        {form.image.trim() && imageUrlOk && imageBroken ? (
+          <p className="text-xs text-red-600">
+            That link didn&apos;t load. You can still save it, but the product
+            will show a blank thumbnail.
+          </p>
+        ) : null}
 
         <label className="flex cursor-pointer items-center gap-2.5 text-sm text-ink-700">
           <input

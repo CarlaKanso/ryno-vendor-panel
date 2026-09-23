@@ -182,9 +182,17 @@ export function ReviewsTable({
                     // Re-keyed on the reply text so a fresh reply fades in
                     // rather than appearing mid-row without explanation.
                     <div key={review.vendor_reply} className="rise-in">
-                      <p className="line-clamp-3 rounded-lg bg-ryno-50 px-2.5 py-2 text-ryno-900">
-                        {review.vendor_reply}
-                      </p>
+                      {/* The padding and the clamp must sit on different
+                          elements. `-webkit-line-clamp` cuts at the third
+                          line, but padding extends the box past that cut, so
+                          a fourth line bleeds into the padding before
+                          `overflow: hidden` catches it — you get the ellipsis
+                          and then more text under it. */}
+                      <div className="rounded-lg bg-ryno-50 px-2.5 py-2">
+                        <p className="line-clamp-3 text-ryno-900">
+                          {review.vendor_reply}
+                        </p>
+                      </div>
                       {review.replied_at ? (
                         <p className="mt-1 text-xs text-ink-400">
                           {formatDateTime(review.replied_at)}

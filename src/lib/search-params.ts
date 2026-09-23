@@ -86,6 +86,9 @@ export function readGranularity(
   return readEnum(params, "granularity", GRANULARITIES, fallback);
 }
 
+/** The dashboard's default window when the URL doesn't name one. */
+export const DEFAULT_RANGE_DAYS = 30;
+
 /**
  * The dashboard date window: whatever is in the URL, falling back to the last
  * 30 days. `today` is passed in rather than read from the clock so the caller
@@ -94,7 +97,7 @@ export function readGranularity(
 export function readDateRange(
   params: SearchParams,
   today: Date,
-  defaultDays = 30,
+  defaultDays = DEFAULT_RANGE_DAYS,
 ): { from: string; to: string } {
   const fallback = lastNDays(defaultDays, today);
   const from = readDateKey(params, "from") ?? fallback.from;

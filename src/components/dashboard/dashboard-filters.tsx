@@ -8,7 +8,8 @@ import { Button } from "@/components/ui/button";
 import { Field, Select, TextInput } from "@/components/ui/field";
 import type { Category, Shop } from "@/lib/api/types";
 import type { CategoryTree } from "@/lib/api/vendor";
-import { buildQuery } from "@/lib/search-params";
+import { lastNDays } from "@/lib/dates";
+import { buildQuery, DEFAULT_RANGE_DAYS } from "@/lib/search-params";
 
 /**
  * The dashboard filter bar.
@@ -69,6 +70,13 @@ export function DashboardFilters({
   };
 
   const reset = () => {
+    // Clear the form as well as the URL. Navigating alone is not enough: if
+    // the user changed a control but never pressed Apply, the URL is already
+    // clean, the query string doesn't change, and the derive-above never
+    // fires — so the form would keep the selections Reset just promised to
+    // drop. `new Date()` is safe here because this runs in an event handler,
+    // not during render.
+    setDraft(blankDraft(new Date()));
     startTransition(() => router.push(pathname));
   };
 
@@ -189,6 +197,12 @@ function toOption(category: Category) {
       {category.name}
     </option>
   );
+}
+
+/** The state Reset returns to: no filters, and the default date window. */
+function blankDraft(today: Date) {
+  const range = lastNDays(DEFAULT_RANGE_DAYS, today);
+  return { shop: "", main: "", category: "", sub: "", from: range.from, to: range.to };
 }
 
 function readDraft(

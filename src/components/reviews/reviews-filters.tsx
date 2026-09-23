@@ -39,6 +39,15 @@ export function ReviewsFilters({ shops }: { shops: Shop[] }) {
     startTransition(() => router.push(`${pathname}${query}`));
   };
 
+  // Clear the form as well as the URL. Navigating alone is not enough: if the
+  // user changed a control but never pressed Apply, the URL is already clean,
+  // the query string doesn't change, and the derive-above never fires — so the
+  // form would keep the selections Reset just promised to drop.
+  const reset = () => {
+    setDraft(BLANK_DRAFT);
+    startTransition(() => router.push(pathname));
+  };
+
   return (
     <form
       className="rounded-card border border-ink-200/80 bg-white p-4 shadow-card"
@@ -143,7 +152,7 @@ export function ReviewsFilters({ shops }: { shops: Shop[] }) {
         <Button
           type="button"
           variant="ghost"
-          onClick={() => startTransition(() => router.push(pathname))}
+          onClick={reset}
           icon={<RotateCcw className="size-4" aria-hidden />}
         >
           Reset
@@ -155,6 +164,16 @@ export function ReviewsFilters({ shops }: { shops: Shop[] }) {
     </form>
   );
 }
+
+/** The state Reset returns to. */
+const BLANK_DRAFT = {
+  shop: "",
+  rating: "",
+  hasReply: "",
+  from: "",
+  to: "",
+  q: "",
+};
 
 function readDraft(searchParams: URLSearchParams) {
   return {

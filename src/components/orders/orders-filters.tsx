@@ -57,6 +57,15 @@ export function OrdersFilters({
       q: draft.q.trim() || null,
     });
 
+  // Clear the form as well as the URL. Navigating alone is not enough: if the
+  // user changed a control but never pressed Apply, the URL is already clean,
+  // the query string doesn't change, and the derive-above never fires — so the
+  // form would keep the selections Reset just promised to drop.
+  const reset = () => {
+    setDraft(BLANK_DRAFT);
+    startTransition(() => router.push(pathname));
+  };
+
   const toggleStatus = (status: OrderStatus) => {
     setDraft((previous) => ({
       ...previous,
@@ -184,7 +193,7 @@ export function OrdersFilters({
         <Button
           type="button"
           variant="ghost"
-          onClick={() => startTransition(() => router.push(pathname))}
+          onClick={reset}
           icon={<RotateCcw className="size-4" aria-hidden />}
         >
           Reset
@@ -196,6 +205,15 @@ export function OrdersFilters({
     </form>
   );
 }
+
+/** The state Reset returns to. */
+const BLANK_DRAFT = {
+  shop: "",
+  from: "",
+  to: "",
+  q: "",
+  statuses: [] as OrderStatus[],
+};
 
 function readDraft(searchParams: URLSearchParams) {
   const status = searchParams.get("status");

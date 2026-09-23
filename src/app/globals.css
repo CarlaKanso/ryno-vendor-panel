@@ -278,9 +278,28 @@ body {
     margin: 14mm;
   }
 
+  /* The neutral ramp is tuned for a backlit screen. On paper — especially
+     with the browser's "print backgrounds" off, which is the default — the
+     lighter greys wash out to almost nothing. Darkening the tokens for print
+     keeps the hierarchy (a label still reads as subordinate to its value)
+     while making every shade legible in ink. Redefining the tokens rather
+     than the components means it applies everywhere at once. */
+  :root {
+    --color-ink-100: #d8dcd9;
+    --color-ink-200: #b9beba;
+    --color-ink-300: #8d938f;
+    --color-ink-400: #5c625f;
+    --color-ink-500: #474d4a;
+    --color-ink-600: #343936;
+    --color-ink-700: #242826;
+    --color-ink-800: #151817;
+    --color-ink-900: #000000;
+  }
+
   html,
   body {
     background: #fff !important;
+    color: #000;
   }
 
   .print\:hidden {

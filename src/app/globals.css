@@ -286,4 +286,13 @@ body {
   .print\:hidden {
     display: none !important;
   }
+
+  /* Sonner renders its toasts into a portal on <body>, outside the shell, so
+     they need hiding by their own attribute rather than a utility class.
+     `nextjs-portal` is the dev-mode indicator — absent from a production
+     build, but it would otherwise land on a PDF saved while developing. */
+  [data-sonner-toaster],
+  nextjs-portal {
+    display: none !important;
+  }
 }

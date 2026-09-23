@@ -162,7 +162,7 @@ export function Sidebar({
         animate={{ width: collapsed ? 76 : 244 }}
         initial={false}
         transition={softSpring}
-        className="sticky top-0 hidden h-dvh shrink-0 flex-col bg-ryno-700 lg:flex"
+        className="sticky top-0 hidden h-dvh shrink-0 flex-col bg-ryno-700 lg:flex print:!hidden"
       >
         <Brand vendorName={vendorName} collapsed={collapsed} />
         <NavList collapsed={collapsed} layoutPrefix="rail" />
@@ -186,7 +186,7 @@ export function Sidebar({
 
       <AnimatePresence>
         {mobileOpen ? (
-          <div className="fixed inset-0 z-40 lg:hidden">
+          <div className="fixed inset-0 z-40 lg:hidden print:hidden">
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}

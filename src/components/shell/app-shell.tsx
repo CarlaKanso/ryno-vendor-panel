@@ -29,7 +29,7 @@ export function AppShell({
   const closeMobile = useCallback(() => setMobileOpen(false), []);
 
   return (
-    <div className="flex min-h-dvh">
+    <div className="flex min-h-dvh print:block print:min-h-0">
       <Sidebar
         vendorName={vendor.name}
         mobileOpen={mobileOpen}
@@ -37,7 +37,9 @@ export function AppShell({
       />
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-white/85 backdrop-blur-md">
+        {/* Navigation is not content — it has no business on paper. The invoice
+            route depends on this. */}
+        <header className="sticky top-0 z-30 border-b border-ink-200/80 bg-white/85 backdrop-blur-md print:hidden">
           <div className="flex h-16 items-center gap-3 px-4 sm:px-6">
             <button
               type="button"
@@ -77,7 +79,7 @@ export function AppShell({
           </div>
         </header>
 
-        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6">
+        <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 print:p-0">
           {/* Re-keying on the pathname remounts this node, which replays the
               CSS rise on each navigation. No exit animation on purpose:
               holding the old page back would delay the new one for the sake

@@ -5,6 +5,7 @@ import { PageHeader } from "@/components/shell/page-header";
 import { TableSkeleton } from "@/components/ui/skeleton";
 import { getItems } from "@/lib/api/items";
 import { getCategoryTree, getVendor } from "@/lib/api/vendor";
+import { groupSubCategories } from "@/lib/categories";
 
 export const metadata = { title: "Products" };
 
@@ -41,7 +42,7 @@ async function Catalogue() {
   return (
     <ProductsBoard
       items={result.data}
-      subCategories={categories.all.filter((category) => category.level === "sub")}
+      subCategoryGroups={groupSubCategories(categories.all)}
       currency={vendor.currency}
     />
   );

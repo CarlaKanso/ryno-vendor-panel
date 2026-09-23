@@ -13,7 +13,11 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { EmptyState } from "@/components/ui/empty-state";
 import { Field, Select, TextInput } from "@/components/ui/field";
 import { Modal } from "@/components/ui/modal";
-import type { Category, Item } from "@/lib/api/types";
+import type { Item } from "@/lib/api/types";
+import {
+  firstSubCategoryId,
+  type SubCategoryGroup,
+} from "@/lib/categories";
 import { formatMoney } from "@/lib/money";
 
 /**
@@ -51,11 +55,11 @@ function isUsableImageUrl(value: string): boolean {
  */
 export function ProductsBoard({
   items: initialItems,
-  subCategories,
+  subCategoryGroups,
   currency,
 }: {
   items: Item[];
-  subCategories: Category[];
+  subCategoryGroups: SubCategoryGroup[];
   currency: string;
 }) {
   const [items, setItems] = useState(initialItems);
@@ -272,7 +276,7 @@ export function ProductsBoard({
 
       <ProductDialog
         target={editing}
-        subCategories={subCategories}
+        subCategoryGroups={subCategoryGroups}
         onClose={() => setEditing(null)}
         onSave={save}
         saving={pending}
@@ -293,13 +297,13 @@ export function ProductsBoard({
 
 function ProductDialog({
   target,
-  subCategories,
+  subCategoryGroups,
   onClose,
   onSave,
   saving,
 }: {
   target: Item | "new" | null;
-  subCategories: Category[];
+  subCategoryGroups: SubCategoryGroup[];
   onClose: () => void;
   onSave: (input: ProductFormValues) => void;
   saving: boolean;
@@ -327,7 +331,7 @@ function ProductDialog({
       setForm({
         name: item?.name ?? "",
         price: item ? String(item.price) : "",
-        sub_category_id: item?.sub_category_id ?? subCategories[0]?.id ?? "",
+        sub_category_id: item?.sub_category_id ?? firstSubCategoryId(subCategoryGroups),
         barcode: item?.barcode ?? "",
         image: item?.image_url ?? "",
         is_active: item?.is_active ?? true,
@@ -415,10 +419,14 @@ function ProductDialog({
               setForm({ ...form, sub_category_id: event.target.value })
             }
           >
-            {subCategories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
+            {subCategoryGroups.map((group) => (
+              <optgroup key={group.id} label={group.label}>
+                {group.options.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </optgroup>
             ))}
           </Select>
         </Field>

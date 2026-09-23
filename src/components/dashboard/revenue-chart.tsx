@@ -55,7 +55,7 @@ export function RevenueChart({
   const hasRevenue = points.some((point) => point.revenue > 0);
 
   return (
-    <div className="rounded-card border border-ink-200/80 bg-white shadow-card">
+    <div className="min-w-0 rounded-card border border-ink-200/80 bg-white shadow-card">
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-ink-200/70 px-5 py-4">
         <div>
           <h2 className="text-[15px] font-semibold tracking-tight text-ink-900">

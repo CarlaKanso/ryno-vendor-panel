@@ -14,8 +14,14 @@ import { formatMoney } from "@/lib/money";
 export function RecentOrders({ orders }: { orders: Order[] }) {
   const router = useRouter();
 
+  // `min-w-0` on the card root is load-bearing. This card is a grid item, and
+  // grid items default to `min-width: auto` — they refuse to shrink below
+  // their content. Without it the 620px-min table forced the card to ~950px
+  // inside a 375px screen, the `overflow-x-auto` below never got to scroll,
+  // and the sibling card was dragged out to match.
+
   return (
-    <div className="flex h-full flex-col rounded-card border border-ink-200/80 bg-white shadow-card">
+    <div className="flex h-full min-w-0 flex-col rounded-card border border-ink-200/80 bg-white shadow-card">
       <div className="flex items-center justify-between gap-3 border-b border-ink-200/70 px-5 py-4">
         <h2 className="text-[15px] font-semibold tracking-tight text-ink-900">
           Recent Orders

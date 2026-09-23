@@ -33,7 +33,7 @@ export function TopSelling({
   const maxQuantity = Math.max(...items.map((item) => item.quantity), 1);
 
   return (
-    <div className="flex h-full flex-col rounded-card border border-ink-200/80 bg-white shadow-card">
+    <div className="flex h-full min-w-0 flex-col rounded-card border border-ink-200/80 bg-white shadow-card">
       <div className="border-b border-ink-200/70 px-5 pt-4">
         <h2 className="text-[15px] font-semibold tracking-tight text-ink-900">
           Top Selling

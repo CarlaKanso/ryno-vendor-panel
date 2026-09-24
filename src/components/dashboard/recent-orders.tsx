@@ -21,7 +21,7 @@ export function RecentOrders({ orders }: { orders: Order[] }) {
   // and the sibling card was dragged out to match.
 
   return (
-    <div className="flex h-full min-w-0 flex-col rounded-card border border-ink-200/80 bg-white shadow-card">
+    <div className="flex min-w-0 flex-col rounded-card border border-ink-200/80 bg-white shadow-card">
       <div className="flex items-center justify-between gap-3 border-b border-ink-200/70 px-5 py-4">
         <h2 className="text-[15px] font-semibold tracking-tight text-ink-900">
           Recent Orders

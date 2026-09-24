@@ -62,7 +62,13 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
           <Analytics searchParams={params} />
         </Suspense>
 
-        <div className="grid gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        {/* `items-start` so each card ends where its own content ends. Both
+            lists hold five rows, but a review is three lines and an order is
+            one — stretching them to match left ~170px of empty white under
+            the orders, which reads as something failing to load. The chart
+            row above keeps the default stretch, because a fixed-height chart
+            beside a five-item list is naturally the same height. */}
+        <div className="grid items-start gap-4 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
           <Suspense fallback={<Skeleton className="h-[420px] w-full rounded-card" />}>
             <RecentOrdersSection searchParams={params} />
           </Suspense>

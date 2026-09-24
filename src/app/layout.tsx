@@ -22,6 +22,12 @@ const bebas = Bebas_Neue({
   display: "swap",
 });
 
+/**
+ * The favicon comes from `src/app/icon.png` via Next's file convention, not
+ * from an `icons` entry here — the convention emits the right `sizes` and
+ * `type`, and having both produced two <link rel="icon"> tags where the
+ * browser picked whichever it liked.
+ */
 export const metadata: Metadata = {
   title: {
     default: "Vendor Panel · RYNO",
@@ -29,7 +35,6 @@ export const metadata: Metadata = {
   },
   description:
     "Watch sales, manage incoming orders and reply to customer reviews across every branch.",
-  icons: { icon: "/brand/ryno-icon.png" },
 };
 
 export const viewport: Viewport = {

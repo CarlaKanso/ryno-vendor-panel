@@ -7,7 +7,8 @@ and ~1,400 orders over 18 months.
 Four core pages — Dashboard, Order List, Order Details, Reviews & Ratings —
 plus the two bonus surfaces (Products, Shops).
 
-- **Live:** _(Vercel URL)_
+- **Live:** https://ryno-vendor-panel.vercel.app
+- **Repo:** https://github.com/CarlaKanso/ryno-vendor-panel
 - **Stack:** Next.js 16 (App Router, Cache Components) · React 19 · TypeScript
   strict · Tailwind CSS v4 · Motion · Recharts · ExcelJS · Vitest
 

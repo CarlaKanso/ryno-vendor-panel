@@ -188,6 +188,16 @@ export function RecapDeck({
       {/* The page's one heading. The slides carry h2s; this is what a screen
           reader lands on, and what the document is called. */}
       <h1 className="sr-only">{title}</h1>
+
+      {/* With no JavaScript, `seen` never grows past the cover — nothing
+          would ever un-pause a later slide's entrance. This is the one thing
+          CSS genuinely cannot express on its own ("is a script running"), so
+          it is the one purpose-built tool for it: cancels the paused default
+          in `globals.css`, and only a no-JS browser ever parses it. */}
+      <noscript>
+        <style>{`.recap-slide:not([data-seen]) :is(.reveal, .grow-x, .grow-up, .pop-in) { animation-play-state: running !important; }`}</style>
+      </noscript>
+
       <div
         ref={deckRef}
         role="region"

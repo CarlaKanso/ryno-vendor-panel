@@ -372,13 +372,25 @@ body {
 /* ---------------------------------------------------------------------------
    Recap deck — one slide per screen, each one playing when it is reached
 
-   `.reveal` elements rise in, staggered by `--i`. The animation is defined
-   unconditionally so that with no JavaScript every slide simply plays on
-   load, like the rest of the app. Once the deck has hydrated (`data-js`) the
-   entrances inside any slide not yet reached are held paused at their first
-   frame, and released the moment the slide gets `data-seen` — so each slide
-   plays on arrival rather than all at once. The cover carries `data-seen` in
-   the server HTML, so it never waits for hydration at all.
+   `.reveal` elements rise in, staggered by `--i`. The pause below is the CSS
+   default — not gated behind a "JavaScript has hydrated" class — because
+   gating it that way was a real bug: the flag was set inside a `useEffect`,
+   which runs *after* the browser has already painted and started every
+   animation on the page, seen or not. On a cold load there is usually enough
+   time for the effect to win the race and pause things before they run; on a
+   warm one (a repeat visit, script already parsed and cached) the browser
+   can paint and start every `.reveal` on every slide before that effect gets
+   a turn — so slide 6 finishes its entrance off-screen, seconds before
+   anyone scrolls to it, and looks like it never played at all. Pausing in
+   plain CSS has no such race: it applies the instant the stylesheet does,
+   before any JavaScript runs, on every load, cold or warm.
+
+   That leaves the no-JavaScript case, which this used to lean on the same
+   flag for: with no script running, nothing ever adds `data-seen` past the
+   cover, and CSS alone cannot ask "is a script running" — so `<noscript>` is
+   what un-pauses everything for that reader, the one purpose-built tool for
+   exactly this distinction. The cover carries `data-seen` in the server
+   HTML regardless, so it always plays on first paint.
 --------------------------------------------------------------------------- */
 
 .recap-deck {
@@ -395,7 +407,7 @@ body {
   animation-delay: calc(var(--i, 0) * 140ms);
 }
 
-.recap-deck[data-js] .recap-slide:not([data-seen]) :is(.reveal, .grow-x, .grow-up, .pop-in) {
+.recap-slide:not([data-seen]) :is(.reveal, .grow-x, .grow-up, .pop-in) {
   animation-play-state: paused;
 }
 

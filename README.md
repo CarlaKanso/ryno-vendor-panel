@@ -411,8 +411,22 @@ half of it is in view. The entrances themselves are the CSS vocabulary the
 rest of the app uses (`rise-in`, `grow-x`, `grow-up`, `pop-in`), defined
 unconditionally and merely *held paused* inside any slide not yet reached.
 The cover is marked seen in the server HTML, so it plays on first paint with
-no wait for hydration; with JavaScript off nothing is ever paused and the
-deck degrades to a page of sections, every one visible. Count-ups reuse
+no wait for hydration.
+
+The pause is a plain CSS default (`:not([data-seen])` holds an entrance at
+its first frame) rather than something a `useEffect` switches on, which was
+the first version's actual bug: flipping it on from an effect means it can
+only win a race against the browser's own paint — a cold load usually gives
+the effect enough time to pause things first, but a warm one (a repeat
+visit, nothing left to parse) can let every entrance on every slide start
+and finish off-screen before that effect gets a turn, so scrolling down
+later finds every slide already resolved and looking like nothing ever
+played. A plain CSS rule applies with the stylesheet, before any script
+runs, on every load alike. The one thing CSS cannot express on its own is
+"is a script running" — which is what decides whether a later slide will
+ever be marked seen at all — so a `<noscript>` block is what un-pauses
+everything for a reader with JavaScript off, the one purpose-built tool for
+exactly that distinction. Count-ups reuse
 `AnimatedNumber`, mounted only once the slide is reached so the count happens
 on arrival. Printing gives one slide per page with every entrance finished.
 

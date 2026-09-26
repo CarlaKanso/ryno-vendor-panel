@@ -195,3 +195,57 @@ export function formatHour12(hour: number): string {
 export function formatHourRange(fromHour: number, toHour: number): string {
   return `${formatHour12(fromHour)} – ${formatHour12(toHour + 1)}`;
 }
+
+/* ---------------------------------------------------------------------------
+   Month keys — `YYYY-MM`, the unit the monthly recap works in.
+--------------------------------------------------------------------------- */
+
+const MONTHS_LONG = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+] as const;
+
+export function isMonthKey(key: string): boolean {
+  return /^\d{4}-(0[1-9]|1[0-2])$/.test(key);
+}
+
+/** `"2026-08"` → `"August 2026"`. */
+export function formatMonth(key: string): string {
+  const [year, month] = key.split("-").map(Number);
+  return `${MONTHS_LONG[month - 1]} ${year}`;
+}
+
+/** The first and last day of a month, as date keys. */
+export function monthRange(key: string): { from: string; to: string } {
+  const [year, month] = key.split("-").map(Number);
+  // Day 0 of the following month is the last day of this one — which is how
+  // February sorts out its own leap years without a table.
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  return { from: `${key}-01`, to: `${key}-${String(lastDay).padStart(2, "0")}` };
+}
+
+/** `"2026-01"` shifted by `-1` is `"2025-12"`; `Date.UTC` carries the year. */
+export function shiftMonth(key: string, delta: number): string {
+  const [year, month] = key.split("-").map(Number);
+  const shifted = new Date(Date.UTC(year, month - 1 + delta, 1));
+  return `${shifted.getUTCFullYear()}-${String(shifted.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+/**
+ * The month a recap should open on: the last one that has finished. On the
+ * 1st of September that is August; a recap of a month still in progress would
+ * congratulate the vendor on numbers that are about to change.
+ */
+export function lastCompleteMonth(today: string): string {
+  return shiftMonth(today.slice(0, 7), -1);
+}

@@ -8,9 +8,14 @@ import {
   formatDateTime,
   formatHour12,
   formatHourRange,
+  formatMonth,
   formatTime,
+  isMonthKey,
+  lastCompleteMonth,
   lastNDays,
+  monthRange,
   parseDateKey,
+  shiftMonth,
   toDateKey,
   weekdayIndex,
 } from "@/lib/dates";
@@ -153,5 +158,37 @@ describe("hours and weekdays", () => {
     expect(formatHourRange(12, 14)).toBe("12 PM – 3 PM");
     expect(formatHourRange(7, 9)).toBe("7 AM – 10 AM");
     expect(formatHourRange(22, 23)).toBe("10 PM – 12 AM");
+  });
+});
+
+describe("month keys", () => {
+  it("accepts YYYY-MM and nothing else", () => {
+    expect(isMonthKey("2026-08")).toBe(true);
+    expect(isMonthKey("2026-13")).toBe(false);
+    expect(isMonthKey("2026-8")).toBe(false);
+    expect(isMonthKey("2026-08-01")).toBe(false);
+  });
+
+  it("finds the last day of a month, leap years included", () => {
+    expect(monthRange("2026-02")).toEqual({ from: "2026-02-01", to: "2026-02-28" });
+    expect(monthRange("2024-02")).toEqual({ from: "2024-02-01", to: "2024-02-29" });
+    expect(monthRange("2026-12")).toEqual({ from: "2026-12-01", to: "2026-12-31" });
+  });
+
+  it("shifts across year boundaries", () => {
+    expect(shiftMonth("2026-01", -1)).toBe("2025-12");
+    expect(shiftMonth("2025-12", 1)).toBe("2026-01");
+    expect(shiftMonth("2026-08", -14)).toBe("2025-06");
+  });
+
+  it("opens the recap on the last month that has finished", () => {
+    expect(lastCompleteMonth("2026-09-27")).toBe("2026-08");
+    expect(lastCompleteMonth("2026-09-01")).toBe("2026-08");
+    expect(lastCompleteMonth("2026-01-15")).toBe("2025-12");
+  });
+
+  it("spells the month out for a title", () => {
+    expect(formatMonth("2026-08")).toBe("August 2026");
+    expect(formatMonth("2025-12")).toBe("December 2025");
   });
 });

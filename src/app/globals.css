@@ -370,6 +370,63 @@ body {
 }
 
 /* ---------------------------------------------------------------------------
+   Recap deck — one slide per screen, each one playing when it is reached
+
+   `.reveal` elements rise in, staggered by `--i`. The animation is defined
+   unconditionally so that with no JavaScript every slide simply plays on
+   load, like the rest of the app. Once the deck has hydrated (`data-js`) the
+   entrances inside any slide not yet reached are held paused at their first
+   frame, and released the moment the slide gets `data-seen` — so each slide
+   plays on arrival rather than all at once. The cover carries `data-seen` in
+   the server HTML, so it never waits for hydration at all.
+--------------------------------------------------------------------------- */
+
+.recap-deck {
+  scroll-snap-type: y mandatory;
+}
+
+.recap-slide {
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.recap-slide .reveal {
+  animation: rise-in 0.6s cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation-delay: calc(var(--i, 0) * 140ms);
+}
+
+.recap-deck[data-js] .recap-slide:not([data-seen]) :is(.reveal, .grow-x, .grow-up, .pop-in) {
+  animation-play-state: paused;
+}
+
+/* The deck is the document when printed: every slide on its own page, every
+   entrance already finished, nothing held back. */
+@media print {
+  .recap-deck {
+    height: auto !important;
+    overflow: visible !important;
+    scroll-snap-type: none;
+  }
+
+  /* The slides are designed as coloured pages, and their text is white on
+     green and ink on gold — so unlike the invoice, the backgrounds must
+     print, or the green pages come out as white text on white paper. */
+  .recap-slide {
+    min-height: 0 !important;
+    break-after: page;
+    padding: 24mm 0 !important;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+
+  .recap-slide :is(.reveal, .grow-x, .grow-up, .pop-in, .float-y) {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+  }
+}
+
+/* ---------------------------------------------------------------------------
    Print — used by the invoice route
 --------------------------------------------------------------------------- */
 

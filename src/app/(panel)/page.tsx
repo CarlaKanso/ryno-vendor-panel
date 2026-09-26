@@ -1,3 +1,5 @@
+import { Sparkles } from "lucide-react";
+import Link from "next/link";
 import { Suspense } from "react";
 
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
@@ -55,6 +57,17 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
       <PageHeader
         title="Dashboard"
         description="Sales, orders and customer feedback across every Kaya Market branch."
+        actions={
+          // `/recap` picks the last complete month at request time, so this
+          // link needs no date of its own and the header stays prerendered.
+          <Link
+            href="/recap"
+            className="inline-flex h-10 items-center gap-2 rounded-lg bg-gold-400 px-4 text-sm font-semibold text-ryno-900 shadow-sm transition-colors hover:bg-gold-300"
+          >
+            <Sparkles className="size-4" aria-hidden />
+            Monthly recap
+          </Link>
+        }
       />
 
       <div className="space-y-4">

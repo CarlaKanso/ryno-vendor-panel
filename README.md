@@ -5,9 +5,10 @@ Vendor Panel API for **Kaya Market** — a supermarket chain with seven branches
 and ~1,400 orders over 18 months.
 
 Four core pages — Dashboard, Order List, Order Details, Reviews & Ratings —
-plus the two bonus surfaces (Products, Shops), and one card of my own:
+plus the two bonus surfaces (Products, Shops), and two things of my own:
 [**Rush Hours**](#rush-hours), a weekday × hour heatmap of when orders actually
-arrive.
+arrive, and the [**Monthly Recap**](#monthly-recap), a vendor's month told as a
+short animated story.
 
 - **Live:** https://ryno-vendor-panel.vercel.app
 - **Repo:** https://github.com/CarlaKanso/ryno-vendor-panel
@@ -364,6 +365,68 @@ in-cell figure clears 4.9:1 against its own shade.
 
 ---
 
+## Monthly Recap
+
+Behind the **Monthly recap** button on the dashboard is `/recap`: one month of
+the vendor's data, told as up to eight full-screen slides you scroll or arrow
+through (a month with no reviews, say, simply has no reviews slide). *You handled 88 orders — one every 8½ hours, and −10% against July.*
+*Your busiest day was Saturday, and the rush ran 11 AM–2 PM.* *Your best
+seller. Your star branch. What customers said, with the best review of the
+month in big type. One thing to fix: 19 items ran out, GHS 1,840 that was in
+a basket and never sold.* Then the mascot says see you next month.
+
+It is behind a button rather than in the way, because it is something you
+watch, not something you work in — which is also why it lives outside the
+`(panel)` route group, full-screen, with no sidebar and no filters.
+
+### Why a recap
+
+Every other surface in the panel answers a question the vendor came with. This
+one is the panel telling *them* something, unprompted, in a form they would
+show someone. It is the shape of thing a marketplace sends every vendor on the
+first of the month — and every number in it comes from data the dashboard was
+already holding.
+
+### It is the same maths, told differently
+
+The recap computes nothing new about orders. `computeKpis` runs twice (this
+month and last, for the comparison), `buildRushHours` gives the rush slide,
+`topItems` and `topShops` give the next two — all of them the tested functions
+the dashboard uses, applied to one month of the same cached snapshot. The only
+new counting is `dropReport`, which sums the lines a picker marked unavailable
+on completed orders and what they were worth, and `bestReview`, which picks the
+highest rating and, among those, the one with the most to say.
+
+A month is read as itself, thin or not. The sample-size rule that guards the
+dashboard's default view would be wrong here: a recap of August is *about*
+August, and August's 88 orders are the story whether or not they make a
+statistically confident heatmap.
+
+### Choreography without a framework
+
+Each slide plays when you arrive at it, not all at once on load. The mechanism
+is smaller than it looks: the deck is a client component whose only real job
+is an `IntersectionObserver` that marks a slide `data-seen` the first time
+half of it is in view. The entrances themselves are the CSS vocabulary the
+rest of the app uses (`rise-in`, `grow-x`, `grow-up`, `pop-in`), defined
+unconditionally and merely *held paused* inside any slide not yet reached.
+The cover is marked seen in the server HTML, so it plays on first paint with
+no wait for hydration; with JavaScript off nothing is ever paused and the
+deck degrades to a page of sections, every one visible. Count-ups reuse
+`AnimatedNumber`, mounted only once the slide is reached so the count happens
+on arrival. Printing gives one slide per page with every entrance finished.
+
+Keys: arrows, page keys and space move between slides; Escape goes home. The
+overlay chrome — home, print, the step dots — recolours with the slide under
+it, white on the deep green and ink on gold and on the light slides.
+
+`/recap` itself is a door: it redirects to the last *complete* month, chosen
+at request time behind a Suspense boundary (a recap of a month still running
+would congratulate the vendor on numbers about to change). Any month is
+reachable at `/recap/YYYY-MM`; a month that has not begun is a 404.
+
+---
+
 ## Design & motion
 
 Colours, type and the mascot come from the RYNO brand kit: `#395f2d` green,
@@ -397,7 +460,7 @@ so the panel is usable on a tablet.
 npm test
 ```
 
-94 tests over the parts where being wrong is expensive and the logic is pure:
+108 tests over the parts where being wrong is expensive and the logic is pure:
 
 - **`money`** — integer-pesewas arithmetic, the float-drift cases, formatting.
 - **`analytics`** — every KPI definition from the brief, including that
@@ -421,6 +484,11 @@ npm test
   eight shapes of span, leap day and year boundary included.
 - **`search-params`** — clamping, enum tampering, backwards date ranges, and
   the rule that changing a filter resets the page but paging does not.
+- **`recap`** — the drop report (completed orders only, summed in pesewas),
+  which review gets quoted, the month-on-month comparison declining when there
+  is no last month, and the whole recap assembled from an empty month without
+  dividing by zero. Month keys — leap Februaries, year boundaries, and which
+  month "last complete" means on the 1st — are under `dates`.
 
 Nothing mocks the network, because nothing under test touches it.
 

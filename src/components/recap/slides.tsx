@@ -1,6 +1,5 @@
 import { Star } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import type { CSSProperties } from "react";
 
 import { CountUp } from "@/components/recap/count-up";
@@ -494,26 +493,34 @@ export function SignOffSlide({
       <Headline className="text-white">
         {nextLabel ? `On to ${nextLabel.split(" ")[0]}.` : "See you next month."}
       </Headline>
+      {/* Plain anchors, all three: every one of these leaves this exact
+          deck instance and lands on another (or the same URL again, for a
+          month switch), and a soft client-side navigation is precisely what
+          lets Next's router resume a previously rendered instance rather
+          than starting fresh — every slide already sitting marked "seen"
+          from the visit you are leaving. A real navigation has nothing to
+          resume. See the matching note on the dashboard's own recap link. */}
       <div style={at(2)} className="reveal mt-10 flex flex-wrap items-center justify-center gap-3">
-        <Link
+        {/* eslint-disable-next-line @next/next/no-html-link-for-pages */}
+        <a
           href="/"
           className="inline-flex h-11 items-center rounded-lg bg-gold-400 px-5 text-sm font-semibold text-ryno-900 shadow-sm transition-colors hover:bg-gold-300"
         >
           Back to the dashboard
-        </Link>
-        <Link
+        </a>
+        <a
           href={previousHref}
           className="inline-flex h-11 items-center rounded-lg bg-white/10 px-5 text-sm font-medium text-white transition-colors hover:bg-white/20"
         >
           ← {recap.previousLabel}
-        </Link>
+        </a>
         {nextHref && nextLabel ? (
-          <Link
+          <a
             href={nextHref}
             className="inline-flex h-11 items-center rounded-lg bg-white/10 px-5 text-sm font-medium text-white transition-colors hover:bg-white/20"
           >
             {nextLabel} →
-          </Link>
+          </a>
         ) : null}
       </div>
     </div>

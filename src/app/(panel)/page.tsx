@@ -1,5 +1,4 @@
 import { Sparkles } from "lucide-react";
-import Link from "next/link";
 import { Suspense } from "react";
 
 import { DashboardFilters } from "@/components/dashboard/dashboard-filters";
@@ -60,13 +59,22 @@ export default function DashboardPage({ searchParams }: PageProps<"/">) {
         actions={
           // `/recap` picks the last complete month at request time, so this
           // link needs no date of its own and the header stays prerendered.
-          <Link
+          //
+          // A plain anchor, not `next/link`: the recap is a deck that
+          // replays its entrances on arrival, and Next's client-side router
+          // can resume a previously rendered instance of a route on a soft
+          // navigation back to it — same component, same React state,
+          // meaning every slide already sits marked "seen" from last time
+          // and nothing appears to animate. A real navigation has no such
+          // cache to resume from; every visit starts the deck over.
+          // eslint-disable-next-line @next/next/no-html-link-for-pages
+          <a
             href="/recap"
             className="inline-flex h-10 items-center gap-2 rounded-lg bg-gold-400 px-4 text-sm font-semibold text-ryno-900 shadow-sm transition-colors hover:bg-gold-300"
           >
             <Sparkles className="size-4" aria-hidden />
             Monthly recap
-          </Link>
+          </a>
         }
       />
 

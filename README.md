@@ -5,7 +5,9 @@ Vendor Panel API for **Kaya Market** — a supermarket chain with seven branches
 and ~1,400 orders over 18 months.
 
 Four core pages — Dashboard, Order List, Order Details, Reviews & Ratings —
-plus the two bonus surfaces (Products, Shops).
+plus the two bonus surfaces (Products, Shops), and one card of my own:
+[**Rush Hours**](#rush-hours), a weekday × hour heatmap of when orders actually
+arrive.
 
 - **Live:** https://ryno-vendor-panel.vercel.app
 - **Repo:** https://github.com/CarlaKanso/ryno-vendor-panel
@@ -194,6 +196,174 @@ Every write goes through one path (`useOrderActions`), which gives, uniformly:
 
 ---
 
+## Rush Hours
+
+Every KPI in the brief answers the same kind of question — *how much did we
+sell?* None of them answer the one a branch manager asks on a Friday: *when
+does somebody need to be on the floor?* That question is already in the data,
+because every order carries the minute it was placed, and nothing in the panel
+was reading it.
+
+So the dashboard carries one card that isn't in the brief: a weekday × hour
+heatmap of when orders arrive. On this vendor's data it shows the answer
+immediately — Kaya Market has **two** rushes a day, 11 AM–2 PM and 6 PM–9 PM,
+and Saturday carries 17% of the week.
+
+Four decisions in it are worth explaining.
+
+### Every order counts, whatever its status
+
+The KPI cards are careful to keep cancelled and refunded orders out of Total
+Sales. This card deliberately does the opposite and counts them: a cancelled
+order still arrived at 1 PM and still needed a picker to look at it. A staffing
+pattern is about demand, not money. The instant used is `created_at` — when the
+customer pressed the button — rather than `completed_at`, which describes the
+driver's day rather than the shop's.
+
+### A row is every Monday, and the card has to say so
+
+A row is not one Monday — it is all 78 of them stacked. That pooling is the
+whole point (this vendor averages 2.2 orders across an entire Monday, so a
+single day alone is dots, not a pattern; it is the same thing Google Maps does
+with "Popular times"). But the first version printed `22` and left the reader
+to work out that it meant 22 orders across 78 Mondays, which is a question
+someone should not have to ask.
+
+So the card now says it in the subtitle, the footnote gives the denominator
+(`78–79 of each weekday in this window`), and a `/day` column on the right
+carries the average for one such day — `3.0` on a Saturday against `2.2` on a
+Monday. The totals answer *when*; the average answers *is that actually a lot*.
+
+That column also quietly fixes an unfairness in comparing rows: this window
+holds 79 Tuesdays but only 78 Saturdays, so the raw totals are not quite like
+for like. `countWeekdays` walks the span rather than dividing by seven, because
+a window almost never contains whole weeks.
+
+**What it divides by** is the window the card says it read, which is not the
+same as the days that happened to hold an order. Dividing by the latter was a
+real bug: ask for January and February with orders only in the last fortnight
+of February and the observed span holds two Mondays, so the column reported
+`3.0` per Monday where the honest figure over the eight Mondays asked about is
+`0.8`. A quiet Monday is still a Monday.
+
+So a selected range is used whole, minus only the part of it that has not
+happened yet — ask for "this month" on the 14th and the Mondays still to come
+are not Mondays anybody failed to sell on. Nothing is trimmed off the front: a
+Monday before this vendor's first order still counts, because pulling the
+average down is the truthful direction to be wrong in. `today` is passed in
+rather than read from the clock, like every other date in this codebase.
+
+### A pattern needs a sample, so the card widens its own window
+
+This is the decision the card lives or dies on. The dashboard opens on the last
+30 days, which for this vendor is ~100 orders. Spread over a weekday × hour
+grid that is **133 live cells averaging under one order each**, where the
+busiest cell holds four. At that density the darkest cell is one order away
+from the lightest, and the card would point confidently at a "peak" that is
+noise.
+
+So `buildRushHours` takes the filtered orders *and* the same orders without the
+date range, and picks: below 300 orders it reads from everything it has and
+sets `widened`, which the card states in plain words underneath — *"The
+selected range held 82, too few to read an hourly pattern from, so the grid
+widened to every order."* Branch and category filters always apply, because
+those slice the pattern without thinning it past the point of meaning.
+
+Overriding a filter silently would be a bug. Overriding it and saying so, with
+the number that forced the decision, is the honest version.
+
+### …but the rule picks the default, not the answer
+
+The first version of that rule had no way out, which made it the one card on
+the dashboard that could refuse a question. "What did February look like?" is a
+fair thing to ask — for a promotion post-mortem, say — and a card that answers
+a different question instead is worse than one that answers with a caveat
+attached.
+
+So the sample-size rule now only chooses the **default**, exactly as
+`suggestGranularity` does for the revenue chart, and a **This range · All time**
+toggle in the header puts the decision back in reach, with each side showing
+what it holds (`This range 69` / `All time 1,400`) so the trade-off is visible
+before you click. It is two `<Link>`s rather than a client component — the
+choice is a `rush=` URL parameter like every other filter, so it survives a
+refresh and can be sent to somebody.
+
+The footnote then has three things to say, and the difference matters:
+
+| State | What the card says |
+|---|---|
+| Rule widened it | *"The selected range held 69 … switch it back with **This range** above."* |
+| Vendor chose a thin range | *"That is the range you asked for — but 69 orders over 28 days is a thin sample … treat the shape as a hint rather than a finding."* |
+| Vendor chose all time | Nothing. They were not overridden and are owed no explanation. |
+
+That middle row is the important one. February really does read differently —
+the busiest day flips from Saturday to Sunday and the peak becomes a cell
+holding **four** orders — which is precisely the noise the rule was protecting
+the default view from. The vendor can now see it *and* be told why not to
+redraw a rota around it.
+
+### The grid only shows hours that exist
+
+Columns are trimmed to the span that actually holds orders — 04:00 to 22:00
+here — rather than 24 columns with a third of them permanently blank. The trim
+is derived from the data on every render, not hard-coded to a trading day, so a
+branch that opens later simply gets a narrower grid. Hours *inside* the span
+that happen to be empty stay as empty cells, because a gap at 3 PM is a fact
+about the day, not padding.
+
+### The week, and then the day
+
+Under the seven weekday rows sits a `<tfoot>` of column totals drawn as bars —
+the same week collapsed onto one axis. The grid answers *which* day and hour;
+the strip is the shape of the day itself, and it is where "two rushes" stops
+being a claim in the footer and becomes a silhouette you can see. Every fact in
+that footer points at something in the grid: the rush hours darken their own
+column labels, the busiest day darkens its row label, and the peak hour wears a
+gold ring with a slow ping.
+
+### It ships no JavaScript
+
+`RushHours` is a Server Component. The shades are class names, the reveal, the
+bars and the hover are CSS, and the count is printed inside each cell — so
+there is no chart library to hydrate and nothing to wait for. It is markup by
+the time it reaches the browser, and it prerenders into the static shell with
+the rest of the analytics block.
+
+The motion is the vocabulary that was already there: cells `pop-in` on a
+diagonal delay so the grid fills from Monday morning to Sunday night, the
+totals `grow-up` from their baseline, and the peak's ping is one new keyframe
+in `globals.css` rather than a one-off in a component. All of it collapses
+under `prefers-reduced-motion` with everything else.
+
+Hovering lifts a cell over its neighbours and lights up both of its headers.
+The row half is plain CSS (`tr:hover th`), but nothing in the cascade reaches
+*up* from a cell to the column header above it — so the column half is one
+`:has()` rule per column, written out in `globals.css` for the 24 columns an
+hour grid can ever have. It is the one place where a chart library would
+usually be the answer, and `:has()` is cheaper than hydrating one.
+
+Those rules started life generated into a `<style>` at render time, which was
+wrong twice over: React only relocates a rendered stylesheet into `<head>`
+once it hydrates, so the production HTML shipped a `<style>` sitting in
+`<body>` where the spec does not allow one, and an inline sheet is the first
+thing a `style-src` Content-Security-Policy drops. In the stylesheet they are
+valid, cacheable, and working before any JavaScript runs — which is true of
+the whole card: with JavaScript disabled the grid, the crosshair and the
+scope toggle all still work, because the toggle is two `<a>`s.
+
+Printing the number in the cell is also what keeps it honest: colour is the
+summary, the number is the value, and nobody has to hover a tooltip to read
+their own data. Underneath, it is a real `<table>` with `<th>` row and column
+headers and a `sr-only` count in every cell, because a heatmap *is* a table of
+numbers that happens to be coloured. Colour is never the only encoding: the
+peak hour wears a gold outline and is also named in words in the footer.
+
+The five greens are one hue from the brand ramp, light to dark — a magnitude
+scale, so a second hue would invent a category that isn't in the data. Every
+in-cell figure clears 4.9:1 against its own shade.
+
+---
+
 ## Design & motion
 
 Colours, type and the mascot come from the RYNO brand kit: `#395f2d` green,
@@ -205,7 +375,9 @@ Motion is a shared vocabulary (`components/motion/variants.ts`), not per-
 component invention: one spring, small distances, short durations. It is used
 where it carries meaning — the sidebar's active pill slides between items, KPIs
 count up, the revenue area draws in, the tracking timeline fills to the current
-step, table rows stagger, ranking bars grow from zero, dialogs spring in. The
+step, table rows stagger, ranking bars grow from zero, the Rush Hours grid
+fills on a diagonal and its hour totals grow up from the baseline, dialogs
+spring in. The
 whole vocabulary collapses to ~0ms under `prefers-reduced-motion`, and KPI
 numbers render their real value in the server HTML so a card never reads "0"
 before JavaScript runs.
@@ -225,7 +397,7 @@ so the panel is usable on a tablet.
 npm test
 ```
 
-65 tests over the parts where being wrong is expensive and the logic is pure:
+94 tests over the parts where being wrong is expensive and the logic is pure:
 
 - **`money`** — integer-pesewas arithmetic, the float-drift cases, formatting.
 - **`analytics`** — every KPI definition from the brief, including that
@@ -233,7 +405,20 @@ npm test
   Sales; category matching across line items; empty periods rendering as zeros;
   Top Items counting only `available` lines on `completed` orders.
 - **`dates`** — the `17th Sep 2026 09:40 AM` format, ordinal suffixes including
-  the teens, UTC correctness, Monday-started week buckets.
+  the teens, UTC correctness, Monday-started week buckets, and the hour labels
+  Rush Hours reads from (`formatHourRange(12, 14)` is `"12 PM – 3 PM"`, because
+  a shift is spoken with an exclusive end).
+- **`rush hours`** — weekday and hour bucketing in UTC with Monday first,
+  counting every status, trimming the dead hours, shading relative to the
+  busiest slot, naming both rushes when there are two, counting how many of each
+  weekday a span holds (including the partial weeks at its edges), and the
+  sample-size rule: it widens when the range is thin, does *not* claim to have
+  widened when there was nothing more to widen to, and steps aside entirely
+  when the vendor picks a scope from the toggle. The per-day denominator has
+  its own set: the window asked for rather than the days that held an order,
+  capped at today, and never trimmed at the front — including a property test
+  pinning the constant-time weekday arithmetic against a day-by-day walk over
+  eight shapes of span, leap day and year boundary included.
 - **`search-params`** — clamping, enum tampering, backwards date ranges, and
   the rule that changing a filter resets the page but paging does not.
 
@@ -252,6 +437,11 @@ Nothing mocks the network, because nothing under test touches it.
 - **Chart granularity** defaults to daily/weekly/monthly based on the range
   width, so a 550-day range doesn't open as 550 bars. The toggle overrides it
   and lands in the URL.
+- **Rush Hours honours the shop and category filters, and widens its own date
+  window by default** when the selected range holds fewer than 300 orders —
+  stating on the card what it did and what the range held. The **This range /
+  All time** toggle overrides that and lands in the URL as `rush=`. The
+  reasoning is in [Rush Hours](#rush-hours).
 - **The invoice** is a print-styled page, not a generated PDF: the browser's
   print dialog gives "Save as PDF" on every platform, the layout stays
   selectable and searchable, and there is no PDF library to maintain. Lines

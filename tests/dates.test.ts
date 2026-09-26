@@ -6,10 +6,13 @@ import {
   formatBucketLabel,
   formatDate,
   formatDateTime,
+  formatHour12,
+  formatHourRange,
   formatTime,
   lastNDays,
   parseDateKey,
   toDateKey,
+  weekdayIndex,
 } from "@/lib/dates";
 
 describe("formatDateTime", () => {
@@ -114,5 +117,41 @@ describe("misc helpers", () => {
 
   it("formats a Date back to a YYYY-MM-DD key", () => {
     expect(toDateKey(new Date("2026-09-03T23:59:00Z"))).toBe("2026-09-03");
+  });
+});
+
+describe("hours and weekdays", () => {
+  it("indexes weekdays with Monday first, in UTC", () => {
+    // 14th Sep 2026 is a Monday; 20th Sep is the Sunday that closes that week.
+    expect(weekdayIndex("2026-09-14T09:00:00.000Z")).toBe(0);
+    expect(weekdayIndex("2026-09-19T09:00:00.000Z")).toBe(5);
+    expect(weekdayIndex("2026-09-20T09:00:00.000Z")).toBe(6);
+  });
+
+  it("indexes the weekday in UTC, not the reader's zone", () => {
+    // 23:30 UTC on Saturday is already Sunday in Sydney. Accra is UTC, so this
+    // order belongs to Saturday — the same rule the KPIs bucket by.
+    expect(weekdayIndex("2026-09-19T23:30:00.000Z")).toBe(5);
+  });
+
+  it("formats an hour the way a person says it", () => {
+    expect(formatHour12(0)).toBe("12 AM");
+    expect(formatHour12(7)).toBe("7 AM");
+    expect(formatHour12(11)).toBe("11 AM");
+    expect(formatHour12(12)).toBe("12 PM");
+    expect(formatHour12(13)).toBe("1 PM");
+    expect(formatHour12(23)).toBe("11 PM");
+  });
+
+  it("wraps an hour past midnight rather than printing nonsense", () => {
+    expect(formatHour12(24)).toBe("12 AM");
+    expect(formatHour12(25)).toBe("1 AM");
+  });
+
+  it("labels a run of hours with an exclusive end, like a shift", () => {
+    // The hours 12, 13 and 14 cover 12:00 until 14:59, which reads as 12–3.
+    expect(formatHourRange(12, 14)).toBe("12 PM – 3 PM");
+    expect(formatHourRange(7, 9)).toBe("7 AM – 10 AM");
+    expect(formatHourRange(22, 23)).toBe("10 PM – 12 AM");
   });
 });

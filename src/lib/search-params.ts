@@ -7,6 +7,7 @@
  * them and the Client Components that write them.
  */
 
+import { RUSH_SCOPES, type RushScope } from "./analytics";
 import { ORDER_STATUSES, type OrderStatus } from "./api/types";
 import { lastNDays, parseDateKey, type Granularity } from "./dates";
 
@@ -84,6 +85,17 @@ export function readGranularity(
   fallback: Granularity,
 ): Granularity {
   return readEnum(params, "granularity", GRANULARITIES, fallback);
+}
+
+/**
+ * Rush Hours reads either the selected date range or every order.
+ *
+ * `auto` — absent from the URL — lets the card decide on sample size. The
+ * other two are the vendor overruling it, which is why they are URL state like
+ * every other filter: the choice survives a refresh and can be sent to someone.
+ */
+export function readRushScope(params: SearchParams): RushScope {
+  return readEnum(params, "rush", RUSH_SCOPES, "auto");
 }
 
 /** The dashboard's default window when the URL doesn't name one. */

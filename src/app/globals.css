@@ -201,6 +201,20 @@ body {
   }
 }
 
+/* A ring that swells out of a mark and fades — used once per screen, on the
+   single busiest hour in Rush Hours, to say "start reading here". */
+@keyframes ping-soft {
+  0% {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  70%,
+  100% {
+    transform: scale(1.45);
+    opacity: 0;
+  }
+}
+
 .rise-in {
   animation: rise-in 0.42s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
@@ -223,6 +237,16 @@ body {
 .grow-y {
   transform-origin: top center;
   animation: grow-y 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* The same rail, standing up from its base — a column rather than a drop. */
+.grow-up {
+  transform-origin: bottom center;
+  animation: grow-y 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.ping-soft {
+  animation: ping-soft 2.8s cubic-bezier(0.22, 1, 0.36, 1) infinite;
 }
 
 /* Reveals children one after another. The delay is capped so a 100-row table
@@ -266,6 +290,83 @@ body {
 .stagger-cards > * {
   animation-name: rise-in;
   animation-duration: 0.44s;
+}
+
+/* ---------------------------------------------------------------------------
+   Rush Hours — the hover crosshair
+
+   `tr:hover th` lights up a row's own label in one line, but nothing in the
+   cascade reaches *up* from a cell to the column header above it. `:has()`
+   does, one selector per column, which is the whole reason the grid stays
+   readable when a cell sits twelve columns from its label.
+
+   Written out rather than generated into a `<style>` at render time: React
+   only relocates a rendered stylesheet into `<head>` once it hydrates, so a
+   streamed card leaves a `<style>` sitting in `<body>` where the HTML spec
+   does not allow one — and an inline sheet is the first thing a `style-src`
+   Content-Security-Policy would drop. Here it is ordinary CSS in the
+   stylesheet, so it is valid, cacheable, and works before any JavaScript runs.
+
+   The grid never renders more than 24 hour columns, and every row opens with
+   its own header cell, so `nth-child(2)` through `nth-child(25)` covers it.
+   These rules sit outside Tailwind's layers on purpose: unlayered CSS wins
+   over `@layer utilities`, which is what lets them beat the `text-ink-400` on
+   the label they are overriding.
+--------------------------------------------------------------------------- */
+
+.rush-grid:has(tbody td:nth-child(2):hover) thead th:nth-child(2) .rush-hour,
+.rush-grid:has(tbody td:nth-child(3):hover) thead th:nth-child(3) .rush-hour,
+.rush-grid:has(tbody td:nth-child(4):hover) thead th:nth-child(4) .rush-hour,
+.rush-grid:has(tbody td:nth-child(5):hover) thead th:nth-child(5) .rush-hour,
+.rush-grid:has(tbody td:nth-child(6):hover) thead th:nth-child(6) .rush-hour,
+.rush-grid:has(tbody td:nth-child(7):hover) thead th:nth-child(7) .rush-hour,
+.rush-grid:has(tbody td:nth-child(8):hover) thead th:nth-child(8) .rush-hour,
+.rush-grid:has(tbody td:nth-child(9):hover) thead th:nth-child(9) .rush-hour,
+.rush-grid:has(tbody td:nth-child(10):hover) thead th:nth-child(10) .rush-hour,
+.rush-grid:has(tbody td:nth-child(11):hover) thead th:nth-child(11) .rush-hour,
+.rush-grid:has(tbody td:nth-child(12):hover) thead th:nth-child(12) .rush-hour,
+.rush-grid:has(tbody td:nth-child(13):hover) thead th:nth-child(13) .rush-hour,
+.rush-grid:has(tbody td:nth-child(14):hover) thead th:nth-child(14) .rush-hour,
+.rush-grid:has(tbody td:nth-child(15):hover) thead th:nth-child(15) .rush-hour,
+.rush-grid:has(tbody td:nth-child(16):hover) thead th:nth-child(16) .rush-hour,
+.rush-grid:has(tbody td:nth-child(17):hover) thead th:nth-child(17) .rush-hour,
+.rush-grid:has(tbody td:nth-child(18):hover) thead th:nth-child(18) .rush-hour,
+.rush-grid:has(tbody td:nth-child(19):hover) thead th:nth-child(19) .rush-hour,
+.rush-grid:has(tbody td:nth-child(20):hover) thead th:nth-child(20) .rush-hour,
+.rush-grid:has(tbody td:nth-child(21):hover) thead th:nth-child(21) .rush-hour,
+.rush-grid:has(tbody td:nth-child(22):hover) thead th:nth-child(22) .rush-hour,
+.rush-grid:has(tbody td:nth-child(23):hover) thead th:nth-child(23) .rush-hour,
+.rush-grid:has(tbody td:nth-child(24):hover) thead th:nth-child(24) .rush-hour,
+.rush-grid:has(tbody td:nth-child(25):hover) thead th:nth-child(25) .rush-hour {
+  color: var(--color-ink-900);
+  font-weight: 600;
+}
+
+.rush-grid:has(tbody td:nth-child(2):hover) tfoot td:nth-child(2) .rush-bar,
+.rush-grid:has(tbody td:nth-child(3):hover) tfoot td:nth-child(3) .rush-bar,
+.rush-grid:has(tbody td:nth-child(4):hover) tfoot td:nth-child(4) .rush-bar,
+.rush-grid:has(tbody td:nth-child(5):hover) tfoot td:nth-child(5) .rush-bar,
+.rush-grid:has(tbody td:nth-child(6):hover) tfoot td:nth-child(6) .rush-bar,
+.rush-grid:has(tbody td:nth-child(7):hover) tfoot td:nth-child(7) .rush-bar,
+.rush-grid:has(tbody td:nth-child(8):hover) tfoot td:nth-child(8) .rush-bar,
+.rush-grid:has(tbody td:nth-child(9):hover) tfoot td:nth-child(9) .rush-bar,
+.rush-grid:has(tbody td:nth-child(10):hover) tfoot td:nth-child(10) .rush-bar,
+.rush-grid:has(tbody td:nth-child(11):hover) tfoot td:nth-child(11) .rush-bar,
+.rush-grid:has(tbody td:nth-child(12):hover) tfoot td:nth-child(12) .rush-bar,
+.rush-grid:has(tbody td:nth-child(13):hover) tfoot td:nth-child(13) .rush-bar,
+.rush-grid:has(tbody td:nth-child(14):hover) tfoot td:nth-child(14) .rush-bar,
+.rush-grid:has(tbody td:nth-child(15):hover) tfoot td:nth-child(15) .rush-bar,
+.rush-grid:has(tbody td:nth-child(16):hover) tfoot td:nth-child(16) .rush-bar,
+.rush-grid:has(tbody td:nth-child(17):hover) tfoot td:nth-child(17) .rush-bar,
+.rush-grid:has(tbody td:nth-child(18):hover) tfoot td:nth-child(18) .rush-bar,
+.rush-grid:has(tbody td:nth-child(19):hover) tfoot td:nth-child(19) .rush-bar,
+.rush-grid:has(tbody td:nth-child(20):hover) tfoot td:nth-child(20) .rush-bar,
+.rush-grid:has(tbody td:nth-child(21):hover) tfoot td:nth-child(21) .rush-bar,
+.rush-grid:has(tbody td:nth-child(22):hover) tfoot td:nth-child(22) .rush-bar,
+.rush-grid:has(tbody td:nth-child(23):hover) tfoot td:nth-child(23) .rush-bar,
+.rush-grid:has(tbody td:nth-child(24):hover) tfoot td:nth-child(24) .rush-bar,
+.rush-grid:has(tbody td:nth-child(25):hover) tfoot td:nth-child(25) .rush-bar {
+  filter: saturate(1.5);
 }
 
 /* ---------------------------------------------------------------------------

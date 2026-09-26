@@ -157,3 +157,41 @@ export function formatBucketLabel(key: string, granularity: Granularity): string
   const label = `${date.getUTCDate()} ${MONTHS[date.getUTCMonth()]}`;
   return granularity === "weekly" ? `w/c ${label}` : label;
 }
+
+/**
+ * Weekday names, Monday first.
+ *
+ * Monday first rather than Sunday first for the same reason `bucketKey` starts
+ * its weeks there: a trading week in Accra runs Monday to Sunday, and the
+ * weekend belongs at the end of the row where the eye expects the peak.
+ */
+export const WEEKDAYS = [
+  { short: "Mon", long: "Monday" },
+  { short: "Tue", long: "Tuesday" },
+  { short: "Wed", long: "Wednesday" },
+  { short: "Thu", long: "Thursday" },
+  { short: "Fri", long: "Friday" },
+  { short: "Sat", long: "Saturday" },
+  { short: "Sun", long: "Sunday" },
+] as const;
+
+/** The weekday an instant falls on, `0` = Monday, in UTC. */
+export function weekdayIndex(iso: string): number {
+  return (new Date(iso).getUTCDay() + 6) % 7;
+}
+
+/** `13` → `"1 PM"`. Prose; the heatmap's own axis stays on the 24-hour clock. */
+export function formatHour12(hour: number): string {
+  const h = ((Math.trunc(hour) % 24) + 24) % 24;
+  const twelve = h % 12 === 0 ? 12 : h % 12;
+  return `${twelve} ${h < 12 ? "AM" : "PM"}`;
+}
+
+/**
+ * A run of whole hours, read the way a shift is spoken: `(12, 14)` — the hours
+ * 12:00 to 14:59 — is `"12 PM – 3 PM"`. The end hour is inclusive in the data
+ * and exclusive in the label, which is what makes the label match the clock.
+ */
+export function formatHourRange(fromHour: number, toHour: number): string {
+  return `${formatHour12(fromHour)} – ${formatHour12(toHour + 1)}`;
+}

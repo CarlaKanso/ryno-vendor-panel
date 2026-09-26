@@ -5,25 +5,29 @@ import { KpiCards } from "@/components/dashboard/kpi-cards";
 import { RecentOrders } from "@/components/dashboard/recent-orders";
 import { RecentReviews } from "@/components/dashboard/recent-reviews";
 import { RevenueChart } from "@/components/dashboard/revenue-chart";
+import { RushHours } from "@/components/dashboard/rush-hours";
 import { TopSelling } from "@/components/dashboard/top-selling";
 import { PageHeader } from "@/components/shell/page-header";
 import { CardSkeleton, Skeleton } from "@/components/ui/skeleton";
 import {
   buildRevenueSeries,
+  buildRushHours,
   computeKpis,
   filterOrders,
   suggestGranularity,
   topItems,
   topShops,
   type DashboardFilters as Filters,
+  type RushScope,
 } from "@/lib/analytics";
 import { getDashboardSnapshot, getRecentOrders } from "@/lib/api/orders";
 import { getRecentReviews } from "@/lib/api/reviews";
 import { getCategoryTree, getShops, getVendor } from "@/lib/api/vendor";
-import type { Granularity } from "@/lib/dates";
+import { toDateKey, type Granularity } from "@/lib/dates";
 import {
   readDateRange,
   readGranularity,
+  readRushScope,
   readString,
   type SearchParams,
 } from "@/lib/search-params";
@@ -92,13 +96,20 @@ async function resolveFilters(searchParams: SearchParamsPromise): Promise<{
   filters: Filters;
   range: { from: string; to: string };
   granularity: Granularity;
+  rushScope: RushScope;
+  today: string;
+  params: SearchParams;
 }> {
   const params = await searchParams;
-  const range = readDateRange(params, new Date());
+  const today = new Date();
+  const range = readDateRange(params, today);
 
   return {
+    params,
     range,
+    today: toDateKey(today),
     granularity: readGranularity(params, suggestGranularity(range)),
+    rushScope: readRushScope(params),
     filters: {
       shopId: readString(params, "shop_id"),
       mainCategoryId: readString(params, "main_category_id"),
@@ -122,6 +133,12 @@ function AnalyticsSkeleton() {
         <Skeleton className="h-[380px] rounded-card" />
         <Skeleton className="h-[380px] rounded-card" />
       </div>
+      {/* Rush Hours, whose height is driven by how many lines its footnote wraps
+          to — measured at ~870px on a phone down to ~600px on a wide desktop.
+          A single 420px block left the page jumping a third of a screen when
+          the section streamed in, which is the shift this skeleton exists to
+          prevent. */}
+      <Skeleton className="h-[860px] w-full rounded-card sm:h-[760px] lg:h-[700px] xl:h-[620px]" />
     </div>
   );
 }
@@ -144,13 +161,18 @@ async function FilterBar({ searchParams }: { searchParams: SearchParamsPromise }
  * views cost one fetch rather than five.
  */
 async function Analytics({ searchParams }: { searchParams: SearchParamsPromise }) {
-  const [{ filters, range, granularity }, snapshot, vendor] = await Promise.all([
+  const [{ filters, range, granularity, rushScope, today, params }, snapshot, vendor] =
+    await Promise.all([
     resolveFilters(searchParams),
     getDashboardSnapshot(),
     getVendor(),
   ]);
 
   const orders = filterOrders(snapshot, filters);
+  // Rush Hours is given the same orders without the date range as well, so it
+  // can widen to a readable sample when the selected range is too thin. It is
+  // two more passes over an array that is already in memory, not a second fetch.
+  const undated = filterOrders(snapshot, { ...filters, from: undefined, to: undefined });
 
   return (
     <div className="space-y-4">
@@ -168,6 +190,11 @@ async function Analytics({ searchParams }: { searchParams: SearchParamsPromise }
           currency={vendor.currency}
         />
       </div>
+
+      <RushHours
+        data={buildRushHours(orders, undated, { scope: rushScope, range, today })}
+        searchParams={params}
+      />
     </div>
   );
 }

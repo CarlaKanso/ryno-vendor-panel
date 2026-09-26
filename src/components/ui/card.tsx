@@ -44,7 +44,21 @@ export function CardHeader({
           <p className="mt-0.5 text-sm text-ink-500">{description}</p>
         ) : null}
       </div>
-      {actions ? <div className="flex shrink-0 items-center gap-2">{actions}</div> : null}
+      {/* `flex-wrap` plus no `shrink-0`: `actions` is only ever used with more
+          than one control today (Rush Hours' scope toggle beside its colour
+          legend), and on a narrow phone that pair is wider than the card.
+          `shrink-0` would have held the box at its full unwrapped width no
+          matter how little room the line actually had — a flex item told
+          never to shrink also never gets squeezed down to the width its own
+          `flex-wrap` needs to kick in, so the pair just overflowed the card
+          edge instead of dropping to a second line. Letting it shrink is
+          exactly what lets it wrap; `min-w-0` on the title is what still
+          gives actions first claim on the row's width when both fit on one
+          line. `justify-end` keeps a wrapped second line flush with the
+          first, on the same side. */}
+      {actions ? (
+        <div className="flex min-w-0 flex-wrap items-center justify-end gap-2">{actions}</div>
+      ) : null}
     </div>
   );
 }

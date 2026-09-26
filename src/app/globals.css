@@ -429,6 +429,25 @@ body {
     padding: 24mm 0 !important;
     print-color-adjust: exact;
     -webkit-print-color-adjust: exact;
+    /* This shares the invoice's `@page { margin: 14mm }` above, which A4
+       already spends down to a 182mm-wide printable area. The slide content
+       is sized for a screen (`max-w-3xl`, 768px) with room to spare there —
+       print it unconstrained and it overflows that 182mm by roughly 80px,
+       and since the slide is `overflow-hidden` at every other size too (it
+       has to be, to contain the mascot's float on screen), that overflow
+       doesn't spill onto a next line, it just gets cut, symmetrically off
+       both edges of the centred content — the left is what shows on a page
+       of left-set headlines and icons. `visible` here is what turns a silent
+       crop into, at worst, a harmless bit of unused margin. */
+    overflow: visible !important;
+  }
+
+  /* The real fix: keep content inside the 182mm A4 leaves at 14mm margins,
+     with slack for a stray pixel of rounding across PDF engines, rather than
+     relying on `overflow` to hide a sizing mismatch a browser will not always
+     get equally wrong. */
+  .recap-slide-content {
+    max-width: 160mm !important;
   }
 
   .recap-slide :is(.reveal, .grow-x, .grow-up, .pop-in, .float-y) {

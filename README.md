@@ -434,6 +434,18 @@ Keys: arrows, page keys and space move between slides; Escape goes home. The
 overlay chrome — home, print, the step dots — recolours with the slide under
 it, white on the deep green and ink on gold and on the light slides.
 
+Printing shares the invoice's `@page { margin: 14mm }`, which spends A4 down
+to a 182mm printable width — narrower than the slide content's `max-w-3xl`
+(768px on screen, no problem there), and `.recap-slide` stays `overflow:
+hidden` at every other size to contain the mascot's float. Combined, print
+would silently crop roughly 40px off both edges of every slide rather than
+show it. A `.recap-slide-content` class gives print CSS something explicit
+to constrain (`max-width: 160mm`, with slack for rounding across PDF
+engines) instead of reaching into a Tailwind utility class name, and the
+slide itself switches to `overflow: visible` for print — so a rule that
+turns out slightly wrong overflows visibly onto a bit of margin rather than
+disappearing without a trace.
+
 `/recap` itself is a door: it redirects to the last *complete* month, chosen
 at request time behind a Suspense boundary (a recap of a month still running
 would congratulate the vendor on numbers about to change). Any month is

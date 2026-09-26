@@ -31,8 +31,6 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files — secrets stay local, .env.example is committed
-.env
-.env.*
 !.env.example
 
 # vercel
@@ -46,3 +44,4 @@ next-env.d.ts
 /.claude
 /AGENTS.md
 /CLAUDE.md
+config.bat

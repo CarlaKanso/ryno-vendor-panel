@@ -2,7 +2,6 @@
 
 import { ArrowLeft, ChevronDown, ChevronUp, Printer } from "lucide-react";
 import { useReducedMotion } from "motion/react";
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -218,7 +217,7 @@ export function RecapDeck({
                 TONE_CLASS[slide.tone],
               )}
             >
-              <div className="w-full max-w-3xl">{slide.content}</div>
+              <div className="recap-slide-content w-full max-w-3xl">{slide.content}</div>
             </section>
           </SeenContext.Provider>
         ))}
@@ -229,7 +228,11 @@ export function RecapDeck({
           document, the controls are not. */}
       <div className="pointer-events-none absolute inset-0 print:hidden">
         <div className="pointer-events-auto absolute left-4 top-4 flex items-center gap-2 sm:left-6 sm:top-6">
-          <Link
+          {/* A plain anchor: leaving the deck through the router's soft
+              navigation is exactly what lets a later re-entry resume this
+              same, already-fully-seen instance instead of starting over —
+              see the matching note on the dashboard's "Monthly recap" link. */}
+          <a
             href={homeHref}
             className={cn(
               "inline-flex h-9 items-center gap-1.5 rounded-lg px-3 text-[13px] font-medium backdrop-blur transition-colors",
@@ -238,7 +241,7 @@ export function RecapDeck({
           >
             <ArrowLeft className="size-4" aria-hidden />
             Dashboard
-          </Link>
+          </a>
         </div>
 
         <div className="pointer-events-auto absolute right-4 top-4 sm:right-6 sm:top-6">
